@@ -768,6 +768,9 @@ select.filter-select {
         </div>
         <div id="customCatTags" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;"></div>
       </div>
+      <div style="margin-top:12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--text-medium);font-weight:600;white-space:nowrap;">自訂材質：</span>
           <input type="text" id="pCustomMat" placeholder="輸入新材質名稱…" style="flex:1;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:13px;font-family:inherit;outline:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomMaterial();}"/>
           <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomMaterial()">＋ 新增材質</button>
         </div>
