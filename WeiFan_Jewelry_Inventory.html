@@ -1293,6 +1293,12 @@ function doLogin() {
     return;
   }
   currentUser = user;
+  // 記住登入狀態
+  try { localStorage.setItem('weifan_session', JSON.stringify({login: user.login, pass: user.pass})); } catch(e){}
+  showAppForUser(user);
+}
+
+function showAppForUser(user) {
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('sidebarRole').textContent = roleLabel(user.role);
@@ -1303,6 +1309,8 @@ function doLogin() {
 
 function doLogout() {
   currentUser = null;
+  // 清除登入狀態
+  try { localStorage.removeItem('weifan_session'); } catch(e){}
   document.getElementById('app').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('loginUser').value='';
@@ -2649,6 +2657,21 @@ document.addEventListener('keydown',e=>{
 (async () => {
   await loadDB();
   document.getElementById('dashDate').textContent = new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  // 自動登入：檢查是否有記住的登入狀態
+  try {
+    const session = localStorage.getItem('weifan_session');
+    if(session) {
+      const { login, pass } = JSON.parse(session);
+      const user = DB.users.find(x => x.login===login && x.pass===pass);
+      if(user) {
+        currentUser = user;
+        showAppForUser(user);
+        return;
+      }
+    }
+  } catch(e){}
+  // 沒有記住的狀態，顯示登入畫面
+  document.getElementById('loginScreen').style.display='flex';
 })();
 </script>
 </body>
