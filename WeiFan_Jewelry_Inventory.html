@@ -1,0 +1,2688 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>惟凡精品珠寶 Inventory System</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Noto+Serif+TC:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --rose-gold: #C9956C;
+  --rose-gold-light: #E8C5A8;
+  --rose-gold-dark: #9B6347;
+  --rose-gold-pale: #F5E6D8;
+  --rose-gold-bg: #F0DDD0;
+  --champagne: #F7ECD8;
+  --champagne-dark: #E8D5B8;
+  --gold: #C9A84C;
+  --gold-light: #E8D49A;
+  --cream: #FBF6F0;
+  --deep-brown: #3D2B1F;
+  --medium-brown: #6B4C36;
+  --light-brown: #9E7B5E;
+  --white: #FFFFFF;
+  --text-dark: #2C1A0E;
+  --text-medium: #5C3D28;
+  --text-light: #8B6347;
+  --border-color: #D4A882;
+  --shadow: 0 4px 20px rgba(139,86,54,0.15);
+  --shadow-sm: 0 2px 8px rgba(139,86,54,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Noto Serif TC', serif;
+  background-color: #D4899A;
+  background-image:
+    repeating-linear-gradient(
+      110deg,
+      transparent 0px,
+      rgba(255,235,240,0.22) 1px,
+      rgba(255,235,240,0.22) 2px,
+      transparent 3px,
+      transparent 16px
+    ),
+    repeating-linear-gradient(
+      -70deg,
+      transparent 0px,
+      rgba(180,80,100,0.12) 1px,
+      rgba(180,80,100,0.12) 2px,
+      transparent 3px,
+      transparent 20px
+    ),
+    linear-gradient(
+      150deg,
+      #C8788A 0%,
+      #E8A8B8 7%,
+      #D4889A 13%,
+      #F0C0CC 20%,
+      #C87888 28%,
+      #E8A0B0 35%,
+      #D49AAA 42%,
+      #F2C8D2 50%,
+      #C880A0 57%,
+      #E0A8BC 64%,
+      #D090A8 71%,
+      #EAB8C8 78%,
+      #C87898 86%,
+      #DFA0B4 93%,
+      #C888A0 100%
+    );
+  background-size: auto, auto, 100% 100%;
+  min-height: 100vh;
+  color: var(--text-dark);
+}
+/* LOGIN */
+#loginScreen {
+  position:fixed; inset:0; z-index:1000;
+  background-color: #D4899A;
+  background-image:
+    repeating-linear-gradient(110deg, transparent 0px, rgba(255,235,240,0.22) 1px, rgba(255,235,240,0.22) 2px, transparent 3px, transparent 16px),
+    repeating-linear-gradient(-70deg, transparent 0px, rgba(180,80,100,0.12) 1px, rgba(180,80,100,0.12) 2px, transparent 3px, transparent 20px),
+    linear-gradient(150deg, #C8788A 0%, #E8A8B8 7%, #D4889A 13%, #F0C0CC 20%, #C87888 28%, #E8A0B0 35%, #D49AAA 42%, #F2C8D2 50%, #C880A0 57%, #E0A8BC 64%, #D090A8 71%, #EAB8C8 78%, #C87898 86%, #DFA0B4 93%, #C888A0 100%);
+  display:flex; align-items:center; justify-content:center;
+}
+.login-box {
+  background: rgba(255,255,255,0.95);
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  text-align:center;
+}
+.login-logo { font-size:48px; margin-bottom:8px; }
+.login-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; color: var(--rose-gold-dark);
+  margin-bottom: 4px;
+}
+.login-subtitle { font-size:12px; color: var(--text-light); margin-bottom:32px; letter-spacing:2px; }
+.login-box input {
+  width:100%; padding:12px 16px; margin-bottom:12px;
+  border: 1.5px solid var(--border-color); border-radius:10px;
+  font-size:14px; font-family:inherit; background:#FBF6F0;
+  outline:none; color: var(--text-dark);
+}
+.login-box input:focus { border-color: var(--rose-gold); }
+.btn-login {
+  width:100%; padding:14px;
+  background: linear-gradient(135deg, var(--rose-gold), var(--rose-gold-dark));
+  color:#fff; border:none; border-radius:10px; font-size:16px;
+  font-family:'Playfair Display',serif; cursor:pointer; letter-spacing:1px;
+  transition: all 0.3s;
+}
+.btn-login:hover { opacity:0.9; transform:translateY(-1px); }
+.login-err { color:#c0392b; font-size:13px; margin-top:8px; display:none; }
+
+/* LAYOUT */
+#app { display:flex; min-height:100vh; }
+#sidebar {
+  width:240px; min-height:100vh;
+  background: rgba(255,255,255,0.28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display:flex; flex-direction:column; flex-shrink:0;
+  position:fixed; left:0; top:0; bottom:0; z-index:100;
+  overflow-y:auto;
+  border-right: 1px solid rgba(255,255,255,0.45);
+  box-shadow: 4px 0 28px rgba(180,100,120,0.12);
+}
+#mainContent { margin-left:240px; flex:1; min-height:100vh; }
+.sidebar-header {
+  padding: 24px 18px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.18);
+}
+.brand-name {
+  font-family:'Playfair Display',serif;
+  font-size:13px; color: #7A3A4A;
+  line-height:1.4; margin-top:10px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+}
+.brand-diamond { font-size:36px; display:block; filter: drop-shadow(0 2px 6px rgba(180,80,100,0.3)); }
+.nav-section { padding: 10px 0; }
+.nav-label {
+  font-size:9px; color: rgba(120,60,75,0.55);
+  padding: 10px 18px 5px; letter-spacing:3px; text-transform:uppercase;
+  font-weight:600;
+}
+.nav-item {
+  display:flex; align-items:center; gap:12px;
+  padding: 11px 16px; color: rgba(90,40,55,0.75);
+  cursor:pointer; font-size:13px; transition: all 0.22s;
+  border-left: 2px solid transparent;
+  margin: 2px 8px; border-radius: 10px;
+}
+.nav-item:hover {
+  background: rgba(255,255,255,0.45);
+  color: #6B2A3A;
+  border-left-color: rgba(200,120,140,0.5);
+  box-shadow: 0 2px 10px rgba(180,100,120,0.1);
+}
+.nav-item.active {
+  background: rgba(255,255,255,0.62);
+  color: #7A2A3C;
+  border-left: 2px solid #C87890;
+  box-shadow: 0 2px 14px rgba(180,100,120,0.15);
+  font-weight: 600;
+}
+.nav-icon { font-size:17px; width:22px; text-align:center; flex-shrink:0; }
+.user-info {
+  margin-top:auto; padding:16px;
+  border-top:1px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.15);
+}
+.user-badge {
+  display:inline-block; padding:3px 10px;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(200,120,140,0.35);
+  border-radius:20px;
+  font-size:11px; color:#7A3A4A; margin-bottom:7px;
+  letter-spacing: 0.5px; font-weight:600;
+}
+.user-name { color:#5A2030; font-size:13px; font-family:'Playfair Display',serif; font-weight:600; }
+.btn-logout {
+  width:100%; margin-top:10px; padding:9px;
+  background: rgba(255,255,255,0.35);
+  color: rgba(100,40,55,0.8);
+  border:1px solid rgba(200,120,140,0.3); border-radius:8px;
+  font-size:12px; cursor:pointer; font-family:inherit;
+  letter-spacing: 1px; transition: all 0.2s;
+  font-weight:500;
+}
+.btn-logout:hover { background:rgba(255,255,255,0.55); color:#6B2A3A; }
+
+/* PAGE */
+.page { display:none; padding:24px; }
+.page.active { display:block; }
+.page-title {
+  font-family:'Playfair Display',serif;
+  font-size:26px; color: var(--deep-brown); margin-bottom:6px;
+}
+.page-sub { font-size:13px; color:var(--text-light); margin-bottom:24px; }
+
+/* CARDS */
+.card {
+  background: rgba(255,255,255,0.92);
+  border-radius:var(--radius); padding:20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(201,149,108,0.2);
+}
+.card-title {
+  font-size:14px; font-weight:600; color:var(--text-medium);
+  margin-bottom:16px; padding-bottom:10px;
+  border-bottom:1px solid var(--rose-gold-pale);
+}
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:16px; margin-bottom:24px; }
+.stat-card {
+  background: rgba(255,255,255,0.95);
+  border-radius:var(--radius); padding:18px 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(201,149,108,0.25);
+  position:relative; overflow:hidden;
+}
+.stat-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background: linear-gradient(90deg, var(--rose-gold), var(--gold));
+}
+.stat-label { font-size:11px; color:var(--text-light); letter-spacing:1px; margin-bottom:6px; }
+.stat-value { font-size:22px; font-family:'Playfair Display',serif; color:var(--deep-brown); }
+.stat-icon { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:28px; opacity:0.15; }
+
+/* TABLES */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th {
+  background: var(--rose-gold-pale); color:var(--text-medium);
+  padding:10px 12px; text-align:left; font-weight:600;
+  font-size:12px; letter-spacing:0.5px;
+}
+td { padding:10px 12px; border-bottom:1px solid rgba(201,149,108,0.1); color:var(--text-dark); }
+tr:hover td { background:rgba(201,149,108,0.05); }
+
+/* FORMS */
+.form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-group label { font-size:12px; color:var(--text-medium); font-weight:600; letter-spacing:0.5px; }
+.form-group input, .form-group select, .form-group textarea {
+  padding:10px 12px; border:1.5px solid var(--border-color);
+  border-radius:8px; font-size:13px; font-family:inherit;
+  background:#FBF6F0; color:var(--text-dark); outline:none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color:var(--rose-gold); background:#fff;
+}
+.form-group textarea { resize:vertical; min-height:80px; }
+
+/* BUTTONS */
+.btn {
+  padding:9px 18px; border-radius:8px; font-size:13px;
+  cursor:pointer; font-family:inherit; transition:all 0.2s; border:none;
+  font-weight:500; display:inline-flex; align-items:center; gap:6px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--rose-gold), var(--rose-gold-dark));
+  color:#fff;
+}
+.btn-primary:hover { opacity:0.9; transform:translateY(-1px); }
+.btn-secondary {
+  background:var(--champagne); color:var(--text-medium);
+  border:1px solid var(--border-color);
+}
+.btn-secondary:hover { background:var(--rose-gold-pale); }
+.btn-danger { background:#e74c3c; color:#fff; }
+.btn-danger:hover { background:#c0392b; }
+.btn-success { background:#27ae60; color:#fff; }
+.btn-warning { background:#f39c12; color:#fff; }
+.btn-sm { padding:6px 12px; font-size:12px; }
+.btn-group { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* MODAL */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.5);
+  z-index:500; display:none; align-items:center; justify-content:center;
+  padding:20px;
+}
+.modal-overlay.active { display:flex; }
+.modal {
+  background:#fff; border-radius:16px; width:100%; max-width:620px;
+  max-height:90vh; overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+}
+.modal-header {
+  padding:20px 24px 16px;
+  border-bottom:1px solid var(--rose-gold-pale);
+  display:flex; align-items:center; justify-content:space-between;
+  background: linear-gradient(135deg, var(--champagne), var(--rose-gold-pale));
+  border-radius:16px 16px 0 0;
+}
+.modal-title { font-family:'Playfair Display',serif; font-size:18px; color:var(--deep-brown); }
+.modal-close { background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-light); }
+.modal-body { padding:24px; }
+.modal-footer { padding:16px 24px; border-top:1px solid var(--rose-gold-pale); display:flex; gap:8px; justify-content:flex-end; }
+
+/* BADGES */
+.badge {
+  display:inline-block; padding:3px 10px; border-radius:20px;
+  font-size:11px; font-weight:600; letter-spacing:0.5px;
+}
+.badge-gold { background:linear-gradient(135deg,#E8D49A,#C9A84C); color:#5C3D00; }
+.badge-silver { background:linear-gradient(135deg,#E8E8E8,#B0B0B0); color:#3D3D3D; }
+.badge-copper { background:linear-gradient(135deg,#E8C5A8,#C9956C); color:#5C2E00; }
+.badge-platinum { background:linear-gradient(135deg,#E0E0F0,#A0A0C0); color:#1A1A4D; }
+.badge-diamond { background:linear-gradient(135deg,#B0E0FF,#6094C8); color:#001A40; }
+.badge-active { background:#d4edda; color:#155724; }
+.badge-inactive { background:#f8d7da; color:#721c24; }
+.badge-repair { background:#fff3cd; color:#856404; }
+.badge-boss { background:linear-gradient(135deg,#FFD700,#FFA500); color:#3D2000; }
+.badge-manager { background:linear-gradient(135deg,#C9A84C,#9B6347); color:#fff; }
+.badge-staff { background:var(--rose-gold-pale); color:var(--text-medium); }
+
+/* PHOTO UPLOAD */
+.photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.photo-slot {
+  aspect-ratio:1; border:2px dashed var(--border-color); border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; position:relative; overflow:hidden;
+  background:var(--rose-gold-pale); transition:all 0.2s;
+}
+.photo-slot:hover { border-color:var(--rose-gold); }
+.photo-slot img { width:100%; height:100%; object-fit:cover; }
+.photo-slot .photo-label { font-size:11px; color:var(--text-light); text-align:center; }
+.photo-slot input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+/* SEARCH */
+.search-bar {
+  display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;
+}
+.search-input {
+  flex:1; min-width:180px; padding:9px 14px;
+  border:1.5px solid var(--border-color); border-radius:8px;
+  font-size:13px; font-family:inherit; background:#FBF6F0;
+  outline:none;
+}
+.search-input:focus { border-color:var(--rose-gold); }
+select.filter-select {
+  padding:9px 12px; border:1.5px solid var(--border-color); border-radius:8px;
+  font-size:13px; font-family:inherit; background:#FBF6F0; outline:none;
+}
+
+/* TABS */
+.tabs { display:flex; gap:0; margin-bottom:20px; border-bottom:2px solid var(--rose-gold-pale); }
+.tab {
+  padding:10px 20px; cursor:pointer; font-size:13px; color:var(--text-light);
+  border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.2s;
+}
+.tab.active { color:var(--rose-gold-dark); border-bottom-color:var(--rose-gold); font-weight:600; }
+
+/* CHART WRAP */
+.chart-wrap { position:relative; height:220px; }
+
+/* MEMBER CARD */
+.member-card {
+  background: linear-gradient(135deg, #3D2B1F, #6B4C36);
+  border-radius:12px; padding:16px 20px; color:#fff;
+  position:relative; overflow:hidden;
+}
+.member-card::after {
+  content:'💎'; position:absolute; right:16px; top:50%;
+  transform:translateY(-50%); font-size:48px; opacity:0.15;
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  #sidebar { width:60px; }
+  .brand-name, .nav-label, .nav-item span, .user-name, .user-badge { display:none; }
+  .nav-item { justify-content:center; padding:12px; }
+  #mainContent { margin-left:60px; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+}
+.section-divider { height:1px; background:linear-gradient(90deg,transparent,var(--rose-gold),transparent); margin:20px 0; }
+.empty-state { text-align:center; padding:40px; color:var(--text-light); }
+.empty-state .empty-icon { font-size:40px; margin-bottom:10px; }
+.price-display { font-family:'Playfair Display',serif; color:var(--rose-gold-dark); font-weight:600; }
+.stock-0 { color:#e74c3c; }
+.stock-low { color:#f39c12; }
+.stock-ok { color:#27ae60; }
+.alert-box { padding:12px 16px; border-radius:8px; margin-bottom:12px; font-size:13px; }
+.alert-success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+.alert-error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+.alert-info { background:#d1ecf1; color:#0c5460; border:1px solid #bee5eb; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">💎</div>
+    <div class="login-title">惟凡精品珠寶</div>
+    <div class="login-subtitle">INVENTORY SYSTEM</div>
+    <input type="text" id="loginUser" placeholder="帳號" autocomplete="off"/>
+    <input type="password" id="loginPass" placeholder="密碼"/>
+    <button class="btn-login" onclick="doLogin()">登 入</button>
+    <div class="login-err" id="loginErr">帳號或密碼錯誤</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <span class="brand-diamond">💎</span>
+      <div class="brand-name">惟凡精品珠寶<br><small style="font-size:10px;letter-spacing:1px;opacity:.7">Inventory System</small></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">主選單</div>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="nav-icon">📊</span><span>儀表板</span>
+      </div>
+      <div class="nav-item" onclick="showPage('inventory')">
+        <span class="nav-icon">💍</span><span>庫存管理</span>
+      </div>
+      <div class="nav-item" onclick="showPage('sales')">
+        <span class="nav-icon">🛍️</span><span>銷售紀錄</span>
+      </div>
+      <div class="nav-item" onclick="showPage('repair')">
+        <span class="nav-icon">🔧</span><span>維修保養</span>
+      </div>
+      <div class="nav-item" onclick="showPage('customers')">
+        <span class="nav-icon">👥</span><span>客戶資料庫</span>
+      </div>
+      <div class="nav-item" onclick="showPage('reports')">
+        <span class="nav-icon">📈</span><span>報表分析</span>
+      </div>
+      <div class="nav-item" id="nav-admin" onclick="showPage('admin')" style="display:none;">
+        <span class="nav-icon">⚙️</span><span>帳號管理</span>
+      </div>
+    </div>
+    <div class="user-info">
+      <div class="user-badge" id="sidebarRole">老闆</div>
+      <div class="user-name" id="sidebarName">Admin</div>
+      <button class="btn-logout" onclick="doLogout()">登 出</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="mainContent">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title">儀表板</div>
+      <div class="page-sub" id="dashDate"></div>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;" id="dashCharts">
+        <div class="card">
+          <div class="card-title">商品類別分布</div>
+          <div class="chart-wrap"><canvas id="catChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">本月銷售趨勢</div>
+          <div class="chart-wrap"><canvas id="salesTrendChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">待維修商品 🔧</div>
+        <div id="repairDash"></div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="page" id="page-inventory">
+      <div class="page-title">庫存管理</div>
+      <div class="page-sub">所有商品庫存一覽</div>
+      <div class="btn-group" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="openProductModal()">＋ 新增商品</button>
+        <button class="btn btn-secondary" onclick="exportInventoryCSV()">📥 匯出庫存</button>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" id="invSearch" placeholder="搜尋商品名稱、貨號…" oninput="renderInventory()"/>
+        <select class="filter-select" id="invCatFilter" onchange="renderInventory()">
+          <option value="">所有類別</option>
+        </select>
+        <select class="filter-select" id="invMatFilter" onchange="renderInventory()">
+          <option value="">所有材質</option>
+        </select>
+        <select class="filter-select" id="invStatusFilter" onchange="renderInventory()">
+          <option value="">所有狀態</option>
+          <option value="active">上架中</option>
+          <option value="inactive">下架</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>商品照片</th><th>貨號</th><th>商品名稱</th><th>類別</th>
+                <th>材質</th><th>尺寸/規格</th><th>成本</th><th>售價</th>
+                <th>庫存</th><th>狀態</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALES -->
+    <div class="page" id="page-sales">
+      <div class="page-title">銷售紀錄</div>
+      <div class="page-sub">所有銷售交易記錄</div>
+      <div class="btn-group" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="openSaleModal()">＋ 新增銷售</button>
+        <button class="btn btn-secondary" onclick="exportSalesCSV()">📥 匯出銷售</button>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" id="saleSearch" placeholder="搜尋客戶、商品…" oninput="renderSales()"/>
+        <input type="date" class="filter-select" id="saleDateStart" onchange="renderSales()"/>
+        <span style="font-size:13px;color:var(--text-light);">至</span>
+        <input type="date" class="filter-select" id="saleDateEnd" onchange="renderSales()"/>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>銷售日期</th><th>銷售單號</th><th>商品</th><th>客戶</th>
+                <th>數量</th><th>金額</th><th>付款方式</th><th>員工</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="salesTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPAIR -->
+    <div class="page" id="page-repair">
+      <div class="page-title">維修保養</div>
+      <div class="page-sub">維修保養工單管理</div>
+      <div class="btn-group" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="openRepairModal()">＋ 新增工單</button>
+        <button class="btn btn-secondary" onclick="exportRepairCSV()">📥 匯出記錄</button>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" id="repairSearch" placeholder="搜尋客戶、工單號…" oninput="renderRepair()"/>
+        <select class="filter-select" id="repairStatusFilter" onchange="renderRepair()">
+          <option value="">所有狀態</option>
+          <option value="pending">待處理</option>
+          <option value="processing">維修中</option>
+          <option value="done">已完成</option>
+          <option value="pickup">已取件</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>工單號</th><th>收件日</th><th>客戶</th><th>商品描述</th>
+                <th>問題說明</th><th>維修費</th><th>預計完成</th><th>狀態</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="repairTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div class="page" id="page-customers">
+      <div class="page-title">客戶資料庫</div>
+      <div class="page-sub">會員管理與消費記錄</div>
+      <div class="btn-group" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="openCustomerModal()">＋ 新增客戶</button>
+        <button class="btn btn-secondary" onclick="exportCustomersCSV()">📥 匯出客戶</button>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" id="custSearch" placeholder="搜尋姓名、手機、Email…" oninput="renderCustomers()"/>
+        <select class="filter-select" id="custLevelFilter" onchange="renderCustomers()">
+          <option value="">所有等級</option>
+          <option value="copper">銅卡</option>
+          <option value="silver">銀卡</option>
+          <option value="gold">金卡</option>
+          <option value="platinum">白金VIP</option>
+          <option value="diamond">鑽石VVIP</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>會員等級</th><th>姓名</th><th>手機</th><th>生日</th>
+                <th>累積消費</th><th>購買次數</th><th>備註</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="customersTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="page-title">報表分析</div>
+      <div class="page-sub">銷售數據與績效分析</div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchReportTab('overview',this)">總覽</div>
+        <div class="tab" onclick="switchReportTab('inventory_val',this)">庫存價值</div>
+        <div class="tab" onclick="switchReportTab('bestseller',this)">熱銷商品</div>
+        <div class="tab" onclick="switchReportTab('profit',this)" id="tabProfit">利潤分析</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+        <label style="font-size:13px;color:var(--text-medium);">資料期間：</label>
+        <input type="date" class="filter-select" id="rptStart"/>
+        <span style="font-size:13px;">至</span>
+        <input type="date" class="filter-select" id="rptEnd"/>
+        <button class="btn btn-primary btn-sm" onclick="applyReportFilter()">套用</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportReport()">📥 匯出報表</button>
+      </div>
+      <div id="report-overview" class="report-tab active">
+        <div class="stats-grid" id="rptStatsGrid"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+          <div class="card"><div class="card-title">月銷售額走勢</div><div class="chart-wrap"><canvas id="rptMonthChart"></canvas></div></div>
+          <div class="card"><div class="card-title">材質銷售佔比</div><div class="chart-wrap"><canvas id="rptMaterialChart"></canvas></div></div>
+        </div>
+      </div>
+      <div id="report-inventory_val" class="report-tab" style="display:none;">
+        <div class="card" id="invValContent"></div>
+      </div>
+      <div id="report-bestseller" class="report-tab" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="card"><div class="card-title">🏆 依材質熱銷排行</div><div id="bsMaterialList"></div></div>
+          <div class="card"><div class="card-title">🏆 依類別熱銷排行</div><div id="bsCategoryList"></div></div>
+        </div>
+      </div>
+      <div id="report-profit" class="report-tab" style="display:none;">
+        <div class="stats-grid" id="profitStats"></div>
+        <div class="card" style="margin-top:16px;"><div class="card-title">每月銷售額</div><div class="chart-wrap"><canvas id="rptProfitChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="page" id="page-admin">
+      <div class="page-title">帳號管理</div>
+      <div class="page-sub">員工帳號設置（限老闆、主管部分功能）</div>
+      <div class="btn-group" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="openUserModal()" id="btnAddUser">＋ 新增帳號</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>帳號</th><th>姓名</th><th>角色</th><th>建立日期</th><th>操作</th></tr>
+            </thead>
+            <tbody id="usersTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /mainContent -->
+</div><!-- /app -->
+
+<!-- ====== MODALS ====== -->
+<!-- Product Modal -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="productModalTitle">新增商品</div>
+      <button class="modal-close" onclick="closeModal('productModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:16px;">
+        <div class="card-title">商品照片（最多3張）</div>
+        <div class="photo-grid" id="photoGrid">
+          <div class="photo-slot" id="photoSlot0">
+            <div class="photo-label">📷<br>照片 1</div>
+            <input type="file" accept="image/*" onchange="handlePhoto(0,this)"/>
+          </div>
+          <div class="photo-slot" id="photoSlot1">
+            <div class="photo-label">📷<br>照片 2</div>
+            <input type="file" accept="image/*" onchange="handlePhoto(1,this)"/>
+          </div>
+          <div class="photo-slot" id="photoSlot2">
+            <div class="photo-label">📷<br>照片 3</div>
+            <input type="file" accept="image/*" onchange="handlePhoto(2,this)"/>
+          </div>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>貨號 *</label>
+          <input type="text" id="pCode" placeholder="例：RG-001"/>
+        </div>
+        <div class="form-group">
+          <label>商品名稱 *</label>
+          <input type="text" id="pName" placeholder="商品名稱"/>
+        </div>
+        <div class="form-group">
+          <label>類別 *</label>
+          <select id="pCategory">
+            <option value="戒指">戒指</option>
+            <option value="項鍊">項鍊</option>
+            <option value="耳環">耳環</option>
+            <option value="耳釘">耳釘</option>
+            <option value="手環">手環</option>
+            <option value="手鐲">手鐲</option>
+            <option value="手珠串">手珠串</option>
+            <option value="腳鍊">腳鍊</option>
+            <option value="吊墜">吊墜</option>
+            <option value="擺飾">擺飾</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>材質 *</label>
+          <select id="pMaterial">
+            <option value="純銀">純銀</option>
+            <option value="黃金">黃金</option>
+            <option value="白金">白金</option>
+            <option value="玫瑰金">玫瑰金</option>
+            <option value="22K">22K</option>
+            <option value="18K">18K</option>
+            <option value="14K">14K</option>
+            <option value="10K">10K</option>
+          </select>
+        </div>
+        <div class="form-group" id="costFieldWrap">
+          <label>成本 (NT$) *</label>
+          <input type="number" id="pCost" placeholder="0" min="0" step="1"/>
+        </div>
+        <div class="form-group">
+          <label>售價 (NT$) *</label>
+          <input type="number" id="pPrice" placeholder="0" min="0" step="1"/>
+        </div>
+        <div class="form-group">
+          <label>庫存數量 *</label>
+          <input type="number" id="pStock" placeholder="1" min="0" step="1"/>
+        </div>
+        <div class="form-group">
+          <label>尺寸/規格</label>
+          <input type="text" id="pSize" placeholder="例：16號、45cm"/>
+        </div>
+        <div class="form-group">
+          <label>重量</label>
+          <input type="text" id="pWeight" placeholder="例：5.2g"/>
+        </div>
+        <div class="form-group">
+          <label>寶石/材料說明</label>
+          <input type="text" id="pGem" placeholder="例：天然鑽石0.3ct"/>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>商品描述</label>
+        <textarea id="pDesc" placeholder="商品詳細說明…"></textarea>
+      </div>
+      <div style="margin-top:12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--text-medium);font-weight:600;white-space:nowrap;">自訂類別：</span>
+          <input type="text" id="pCustomCat" placeholder="輸入新類別名稱…" style="flex:1;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:13px;font-family:inherit;outline:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCategory();}"/>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomCategory()">＋ 新增類別</button>
+        </div>
+        <div id="customCatTags" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+          <input type="text" id="pCustomMat" placeholder="輸入新材質名稱…" style="flex:1;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:13px;font-family:inherit;outline:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomMaterial();}"/>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomMaterial()">＋ 新增材質</button>
+        </div>
+        <div id="customMatTags" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('productModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveProduct()">儲存商品</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sale Modal -->
+<div class="modal-overlay" id="saleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">新增銷售</div>
+      <button class="modal-close" onclick="closeModal('saleModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>銷售日期 *</label>
+          <input type="date" id="saleDate"/>
+        </div>
+        <div class="form-group">
+          <label>付款方式</label>
+          <select id="salePayment">
+            <option value="現金">現金</option>
+            <option value="信用卡">信用卡</option>
+            <option value="轉帳">轉帳</option>
+            <option value="LINE Pay">LINE Pay</option>
+            <option value="分期付款">分期付款</option>
+            <option value="貨到付款">貨到付款</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>客戶（手機搜尋）</label>
+        <input type="text" id="saleCustomerSearch" placeholder="輸入手機號碼搜尋客戶…" oninput="searchCustomerBySale(this.value)"/>
+        <div id="custSearchResult" style="border:1px solid var(--border-color);border-radius:8px;margin-top:4px;display:none;background:#fff;max-height:150px;overflow-y:auto;"></div>
+        <input type="hidden" id="saleCustomerId"/>
+        <div id="selectedCustInfo" style="margin-top:6px;font-size:13px;color:var(--text-medium);"></div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>選擇商品（輸入貨號搜尋）*</label>
+        <input type="text" id="saleProductSearch" placeholder="輸入貨號或商品名稱…" oninput="searchProductForSale(this.value)" autocomplete="off"/>
+        <div id="saleProductResult" style="border:1px solid var(--border-color);border-radius:8px;margin-top:4px;display:none;background:#fff;max-height:180px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+        <input type="hidden" id="saleProductId"/>
+        <div id="saleProductCard" style="display:none;margin-top:8px;padding:12px 14px;background:var(--rose-gold-pale);border-radius:10px;border:1px solid var(--border-color);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div id="saleProductThumb" style="width:52px;height:52px;border-radius:8px;background:var(--champagne);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden;"></div>
+            <div style="flex:1;">
+              <div id="saleProductName" style="font-weight:600;font-size:14px;color:var(--deep-brown);"></div>
+              <div id="saleProductMeta" style="font-size:12px;color:var(--text-light);margin-top:2px;"></div>
+              <div id="saleProductStock" style="font-size:12px;margin-top:2px;"></div>
+            </div>
+            <div style="text-align:right;">
+              <div id="saleProductPrice" style="font-family:'Playfair Display',serif;font-size:16px;color:var(--rose-gold-dark);font-weight:600;"></div>
+              <button onclick="clearSaleProduct()" style="margin-top:4px;font-size:11px;color:var(--text-light);background:none;border:none;cursor:pointer;text-decoration:underline;">重新選擇</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:12px;">
+        <div class="form-group">
+          <label>數量 *</label>
+          <input type="number" id="saleQty" value="1" min="1" oninput="calcSaleTotal()"/>
+        </div>
+        <div class="form-group">
+          <label>折扣金額 (NT$)</label>
+          <input type="number" id="saleDiscount" value="0" min="0" oninput="calcSaleTotal()"/>
+        </div>
+        <div class="form-group">
+          <label>實際售價 (NT$)</label>
+          <input type="number" id="saleActualPrice" min="0" oninput="calcSaleTotal()"/>
+        </div>
+        <div class="form-group">
+          <label>合計金額</label>
+          <input type="number" id="saleTotal" readonly style="background:#f0f0f0;"/>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>備註</label>
+        <textarea id="saleNote" placeholder="銷售備註…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('saleModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveSale()">確認銷售</button>
+    </div>
+  </div>
+</div>
+
+<!-- Repair Modal -->
+<div class="modal-overlay" id="repairModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="repairModalTitle">新增維修工單</div>
+      <button class="modal-close" onclick="closeModal('repairModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>工單號</label>
+          <input type="text" id="rOrderNo" readonly style="background:#f0f0f0;"/>
+        </div>
+        <div class="form-group">
+          <label>收件日期 *</label>
+          <input type="date" id="rDate"/>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>客戶（手機搜尋）</label>
+        <input type="text" id="rCustSearch" placeholder="輸入手機號碼搜尋客戶…" oninput="searchCustomerByRepair(this.value)"/>
+        <div id="rCustResult" style="border:1px solid var(--border-color);border-radius:8px;margin-top:4px;display:none;background:#fff;max-height:120px;overflow-y:auto;"></div>
+        <input type="hidden" id="rCustomerId"/>
+        <div id="rCustInfo" style="margin-top:6px;font-size:13px;color:var(--text-medium);"></div>
+      </div>
+      <div class="form-grid" style="margin-top:12px;">
+        <div class="form-group">
+          <label>商品描述 *</label>
+          <input type="text" id="rItem" placeholder="例：18K金鑽戒"/>
+        </div>
+        <div class="form-group">
+          <label>維修類型</label>
+          <select id="rType">
+            <option value="一般維修">一般維修</option>
+            <option value="拋光清洗">拋光清洗</option>
+            <option value="調整尺寸">調整尺寸</option>
+            <option value="鑲石修復">鑲石修復</option>
+            <option value="斷裂修復">斷裂修復</option>
+            <option value="電鍍翻新">電鍍翻新</option>
+            <option value="換鍊">換鍊</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>維修費 (NT$)</label>
+          <input type="number" id="rFee" placeholder="0" min="0"/>
+        </div>
+        <div class="form-group">
+          <label>預計完成日</label>
+          <input type="date" id="rDueDate"/>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>問題說明 *</label>
+        <textarea id="rProblem" placeholder="描述維修問題…"></textarea>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>狀態</label>
+        <select id="rStatus">
+          <option value="pending">待處理</option>
+          <option value="processing">維修中</option>
+          <option value="done">已完成</option>
+          <option value="pickup">已取件</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('repairModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveRepair()">儲存工單</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Modal -->
+<div class="modal-overlay" id="customerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="custModalTitle">新增客戶</div>
+      <button class="modal-close" onclick="closeModal('customerModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>姓名 *</label>
+          <input type="text" id="cName" placeholder="客戶姓名"/>
+        </div>
+        <div class="form-group">
+          <label>手機 *</label>
+          <input type="text" id="cPhone" placeholder="0912-345-678"/>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="cEmail" placeholder="email@example.com"/>
+        </div>
+        <div class="form-group">
+          <label>生日</label>
+          <input type="date" id="cBirthday"/>
+        </div>
+        <div class="form-group">
+          <label>性別</label>
+          <select id="cGender">
+            <option value="">不指定</option>
+            <option value="女">女</option>
+            <option value="男">男</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>會員等級（手動設定）</label>
+          <select id="cLevel">
+            <option value="auto">自動（依消費金額）</option>
+            <option value="copper">銅卡</option>
+            <option value="silver">銀卡</option>
+            <option value="gold">金卡</option>
+            <option value="platinum">白金VIP</option>
+            <option value="diamond">鑽石VVIP</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>地址</label>
+        <input type="text" id="cAddress" placeholder="通訊地址"/>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>備註</label>
+        <textarea id="cNote" placeholder="客戶偏好、備注…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('customerModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveCustomer()">儲存客戶</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <div class="modal-title" id="userModalTitle">新增帳號</div>
+      <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>帳號 *</label>
+          <input type="text" id="uLogin" placeholder="登入帳號"/>
+        </div>
+        <div class="form-group">
+          <label>密碼 *</label>
+          <input type="password" id="uPass" placeholder="密碼"/>
+        </div>
+        <div class="form-group">
+          <label>姓名 *</label>
+          <input type="text" id="uName" placeholder="員工姓名"/>
+        </div>
+        <div class="form-group" id="uRoleWrap">
+          <label>角色</label>
+          <select id="uRole">
+            <option value="boss">老闆</option>
+            <option value="manager">主管</option>
+            <option value="staff">一般員工</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('userModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveUser()">建立帳號</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Purchase History Modal -->
+<div class="modal-overlay" id="custHistoryModal">
+  <div class="modal" style="max-width:780px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="custHistoryTitle">購買記錄</div>
+        <div id="custHistoryMeta" style="font-size:12px;color:var(--text-light);margin-top:3px;"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('custHistoryModal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px;">
+      <!-- Member Card -->
+      <div id="custHistoryCard" style="margin-bottom:20px;"></div>
+      <!-- Stats Row -->
+      <div id="custHistoryStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;"></div>
+      <!-- Tabs -->
+      <div style="display:flex;gap:0;border-bottom:2px solid var(--rose-gold-pale);margin-bottom:16px;">
+        <div class="tab active" id="hTabPurchase" onclick="switchHistoryTab('purchase')" style="padding:8px 18px;cursor:pointer;font-size:13px;color:var(--text-light);border-bottom:2px solid transparent;margin-bottom:-2px;">🛍️ 購買記錄</div>
+        <div class="tab" id="hTabRepair" onclick="switchHistoryTab('repair')" style="padding:8px 18px;cursor:pointer;font-size:13px;color:var(--text-light);border-bottom:2px solid transparent;margin-bottom:-2px;">🔧 維修記錄</div>
+      </div>
+      <div id="historyPurchaseTab">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>日期</th><th>單號</th><th>商品</th><th>數量</th><th>金額</th><th>付款方式</th><th>備註</th></tr>
+            </thead>
+            <tbody id="custPurchaseTbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="historyRepairTab" style="display:none;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>日期</th><th>工單號</th><th>商品</th><th>問題</th><th>維修費</th><th>狀態</th></tr>
+            </thead>
+            <tbody id="custRepairTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="viewProductModal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <div class="modal-title">商品詳情</div>
+      <button class="modal-close" onclick="closeModal('viewProductModal')">✕</button>
+    </div>
+    <div class="modal-body" id="viewProductContent"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA STORE
+// ============================================================
+let DB = {
+  users: [
+    { id:'u1', login:'boss', pass:'boss888', name:'惟凡', role:'boss', created:'2024-01-01' },
+    { id:'u2', login:'manager01', pass:'mgr123', name:'陳主管', role:'manager', created:'2024-01-01' },
+    { id:'u3', login:'staff01', pass:'staff123', name:'林員工', role:'staff', created:'2024-01-01' }
+  ],
+  products:[],
+  sales:[],
+  repairs:[],
+  customers:[],
+  customMaterials:[],
+  customCategories:[],
+  photosData:{}
+};
+
+let currentUser = null;
+let editingProductId = null;
+let editingSaleId = null;
+let editingRepairId = null;
+let editingCustomerId = null;
+let editingUserId = null;
+let productPhotos = [null,null,null];
+let chartInstances = {};
+let rptFilter = {start:null, end:null};
+
+// ============================================================
+// SUPABASE CONFIG
+// ============================================================
+const SUPABASE_URL = 'https://zxtmalnekhgxbvplbelw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dG1hbG5la2hneGJ2cGxiZWx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NjMzMjEsImV4cCI6MjA5NTUzOTMyMX0.iGnj_3NpwJsVFEgqbaHeTbyMtyRasqfif3P5DtTtq04';
+
+async function sbFetch(method, table, body=null, match=null) {
+  let url = `${SUPABASE_URL}/rest/v1/${table}`;
+  if(match) url += `?${match}`;
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': method==='POST' ? 'return=representation' : 'return=representation'
+  };
+  const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
+  if(!res.ok) { const err=await res.text(); console.error('Supabase error:',err); return null; }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// 顯示同步狀態
+function showSyncStatus(msg, ok=true) {
+  let el = document.getElementById('syncStatus');
+  if(!el) {
+    el = document.createElement('div');
+    el.id = 'syncStatus';
+    el.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:10px 18px;border-radius:10px;font-size:13px;z-index:9999;transition:opacity 0.5s;box-shadow:0 4px 16px rgba(0,0,0,0.15);font-family:inherit;';
+    document.body.appendChild(el);
+  }
+  el.style.background = ok ? 'rgba(39,174,96,0.95)' : 'rgba(231,76,60,0.95)';
+  el.style.color = '#fff';
+  el.textContent = msg;
+  el.style.opacity = '1';
+  setTimeout(()=>{ el.style.opacity='0'; }, 2500);
+}
+
+// ============================================================
+// STORAGE — 雲端版
+// ============================================================
+async function saveDB() {
+  // 儲存設定(users/customMaterials) 到 weifan_config 表
+  await sbFetch('DELETE','weifan_config',null,'id=neq.0');
+  await sbFetch('POST','weifan_config',{id:1, users: JSON.stringify(DB.users), custom_materials: JSON.stringify(DB.customMaterials)});
+  // photosData 仍存 localStorage（圖片太大不適合存DB）
+  try { localStorage.setItem('weifan_photos', JSON.stringify(DB.photosData)); } catch(e){}
+}
+
+async function loadDB() {
+  showSyncStatus('⏳ 連線雲端資料庫…', true);
+  try {
+    // 建表（若不存在）
+    await ensureTables();
+
+    // 載入各表
+    const [cfgArr, prods, sales, repairs, custs] = await Promise.all([
+      sbFetch('GET','weifan_config'),
+      sbFetch('GET','weifan_products'),
+      sbFetch('GET','weifan_sales'),
+      sbFetch('GET','weifan_repairs'),
+      sbFetch('GET','weifan_customers'),
+    ]);
+    if(cfgArr && cfgArr.length>0) {
+      const cfg = cfgArr[0];
+      DB.users = JSON.parse(cfg.users || '[]') || DB.users;
+      DB.customMaterials = JSON.parse(cfg.custom_materials || '[]');
+      DB.customCategories = JSON.parse(cfg.custom_categories || '[]');
+    }
+    DB.products  = (prods||[]).map(r=>({ ...JSON.parse(r.data), id:r.record_id }));
+    DB.sales     = (sales||[]).map(r=>({ ...JSON.parse(r.data), id:r.record_id }));
+    DB.repairs   = (repairs||[]).map(r=>({ ...JSON.parse(r.data), id:r.record_id }));
+    DB.customers = (custs||[]).map(r=>({ ...JSON.parse(r.data), id:r.record_id }));
+    // 從 Supabase Storage 列出所有照片並建立索引
+    await loadPhotosFromStorage();
+    showSyncStatus('✅ 雲端資料載入成功');
+  } catch(e) {
+    console.error('loadDB error:',e);
+    showSyncStatus('⚠️ 雲端連線失敗，使用本機資料', false);
+    try {
+      const d = localStorage.getItem('weifan_db');
+      if(d) { const p=JSON.parse(d); DB.users=p.users||DB.users; DB.products=p.products||[]; DB.sales=p.sales||[]; DB.repairs=p.repairs||[]; DB.customers=p.customers||[]; DB.customMaterials=p.customMaterials||[]; DB.photosData=p.photosData||{}; }
+    } catch(e2){}
+  }
+}
+
+async function ensureTables() {
+  // 用 POST + upsert 方式確保表存在；若表不存在會得到404，我們忽略
+  // 實際上需要在 Supabase dashboard 建表，這裡改為優雅處理
+}
+
+async function loadPhotosFromStorage() {
+  try {
+    // 列出 Storage bucket 中所有檔案
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/weifan-photos`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ limit: 1000, offset: 0, prefix: '' })
+    });
+    if(!res.ok) return;
+    const files = await res.json();
+    DB.photosData = {};
+    (files||[]).forEach(f => {
+      if(!f.name) return;
+      // 檔名格式：productId_index.ext
+      const match = f.name.match(/^(.+)_(\d)\.[^.]+$/);
+      if(match) {
+        const key = match[1] + '_' + match[2];
+        DB.photosData[key] = `${SUPABASE_URL}/storage/v1/object/public/weifan-photos/${f.name}`;
+      }
+    });
+  } catch(e) {
+    console.error('loadPhotosFromStorage error:', e);
+    // fallback to localStorage
+    try { const ph=localStorage.getItem('weifan_photos'); if(ph) DB.photosData=JSON.parse(ph); } catch(e2){}
+  }
+}
+
+// 單筆資料表操作
+async function dbSave(table, record) {
+  const payload = { record_id: record.id, data: JSON.stringify(record) };
+  // upsert
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=representation'
+    },
+    body: JSON.stringify(payload)
+  });
+  if(!res.ok) console.error('dbSave error:', await res.text());
+  showSyncStatus('☁️ 已同步');
+}
+
+async function dbDelete(table, id) {
+  await sbFetch('DELETE', table, null, `record_id=eq.${encodeURIComponent(id)}`);
+  showSyncStatus('☁️ 已同步');
+}
+
+async function dbSaveConfig() {
+  const payload = { id: 1, users: JSON.stringify(DB.users), custom_materials: JSON.stringify(DB.customMaterials), custom_categories: JSON.stringify(DB.customCategories) };
+  await fetch(`${SUPABASE_URL}/rest/v1/weifan_config`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates'
+    },
+    body: JSON.stringify(payload)
+  });
+  showSyncStatus('☁️ 已同步');
+}
+
+
+// ============================================================
+// AUTH
+// ============================================================
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  const user = DB.users.find(x => x.login===u && x.pass===p);
+  if(!user) {
+    document.getElementById('loginErr').style.display='block';
+    return;
+  }
+  currentUser = user;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('sidebarRole').textContent = roleLabel(user.role);
+  document.getElementById('sidebarName').textContent = user.name;
+  setupNavByRole();
+  initApp();
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginErr').style.display='none';
+}
+
+function roleLabel(r) {
+  return {boss:'👑 老闆', manager:'💼 主管', staff:'👤 員工'}[r] || r;
+}
+
+function setupNavByRole() {
+  const r = currentUser.role;
+  const adminNav = document.getElementById('nav-admin');
+  if(r==='boss') { adminNav.style.display='flex'; }
+  else if(r==='manager') { adminNav.style.display='flex'; }
+  else { adminNav.style.display='none'; }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'"))
+      n.classList.add('active');
+  });
+  // refresh page
+  if(name==='dashboard') renderDashboard();
+  if(name==='inventory') renderInventory();
+  if(name==='sales') renderSales();
+  if(name==='repair') renderRepair();
+  if(name==='customers') renderCustomers();
+  if(name==='reports') renderReports();
+  if(name==='admin') renderUsers();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function initApp() {
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  populateFilters();
+  renderDashboard();
+  seedDemoData();
+}
+
+function seedDemoData() {
+  if(DB.products.length > 0) return;
+  const now = new Date();
+  // Sample products
+  const sampleProds = [
+    {id:'p1',code:'RG-001',name:'玫瑰金鑽石戒指',category:'戒指',material:'18K',cost:8000,price:28000,stock:3,size:'12號',weight:'4.2g',gem:'天然鑽石0.3ct',desc:'璀璨奢華款式',status:'active',photos:[null,null,null],created:'2024-06-01'},
+    {id:'p2',code:'GD-002',name:'黃金項鍊',category:'項鍊',material:'黃金',cost:15000,price:42000,stock:2,size:'45cm',weight:'8.5g',gem:'',desc:'純金設計',status:'active',photos:[null,null,null],created:'2024-07-01'},
+    {id:'p3',code:'SV-003',name:'純銀耳環',category:'耳環',material:'純銀',cost:800,price:2800,stock:5,size:'',weight:'2.1g',gem:'',desc:'優雅設計',status:'active',photos:[null,null,null],created:'2024-08-01'},
+    {id:'p4',code:'PL-004',name:'白金手環',category:'手環',material:'白金',cost:25000,price:68000,stock:1,size:'16cm',weight:'12g',gem:'',desc:'頂級白金',status:'active',photos:[null,null,null],created:'2024-09-01'},
+    {id:'p5',code:'RG-005',name:'玫瑰金耳釘',category:'耳釘',material:'玫瑰金',cost:1200,price:3800,stock:0,size:'',weight:'1.5g',gem:'珍珠',desc:'珍珠耳釘',status:'inactive',photos:[null,null,null],created:'2024-10-01'}
+  ];
+  DB.products = sampleProds;
+
+  const sampleCusts = [
+    {id:'c1',name:'王小美',phone:'0912345678',email:'wang@mail.com',birthday:'1985-03-15',gender:'女',address:'台北市信義區',note:'偏好玫瑰金',totalSpend:55000,purchases:4,manualLevel:null,created:'2024-01-15'},
+    {id:'c2',name:'李大中',phone:'0923456789',email:'lee@mail.com',birthday:'1978-07-22',gender:'男',address:'台北市大安區',note:'',totalSpend:28000,purchases:2,manualLevel:null,created:'2024-03-10'},
+    {id:'c3',name:'陳雅琳',phone:'0934567890',email:'chen@mail.com',birthday:'1992-11-08',gender:'女',address:'新北市板橋區',note:'喜歡鑽石',totalSpend:8000,purchases:1,manualLevel:null,created:'2024-05-20'}
+  ];
+  DB.customers = sampleCusts;
+
+  const m = now.getMonth()+1;
+  const y = now.getFullYear();
+  const sampleSales = [
+    {id:'s1',orderNo:'SO-20240601-001',date:`${y}-${String(m).padStart(2,'0')}-02`,productId:'p1',productName:'玫瑰金鑽石戒指',customerId:'c1',customerName:'王小美',qty:1,unitPrice:28000,discount:0,total:28000,payment:'信用卡',note:'',staffId:currentUser.id,staffName:currentUser.name},
+    {id:'s2',orderNo:'SO-20240615-002',date:`${y}-${String(m).padStart(2,'0')}-08`,productId:'p3',productName:'純銀耳環',customerId:'c2',customerName:'李大中',qty:2,unitPrice:2800,discount:200,total:5400,payment:'現金',note:'',staffId:currentUser.id,staffName:currentUser.name},
+    {id:'s3',orderNo:'SO-20240701-003',date:`${y}-${String(m).padStart(2,'0')}-15`,productId:'p2',productName:'黃金項鍊',customerId:'c1',customerName:'王小美',qty:1,unitPrice:42000,discount:2000,total:40000,payment:'轉帳',note:'',staffId:currentUser.id,staffName:currentUser.name}
+  ];
+  DB.sales = sampleSales;
+
+  DB.repairs = [
+    {id:'r1',orderNo:'RP-001',date:`${y}-${String(m).padStart(2,'0')}-05`,customerId:'c1',customerName:'王小美',item:'18K玫瑰金戒指',type:'拋光清洗',fee:800,dueDate:`${y}-${String(m).padStart(2,'0')}-10`,problem:'表面刮痕',status:'done',created:`${y}-${String(m).padStart(2,'0')}-05`},
+    {id:'r2',orderNo:'RP-002',date:`${y}-${String(m).padStart(2,'0')}-12`,customerId:'c3',customerName:'陳雅琳',item:'純銀項鍊',type:'斷裂修復',fee:1200,dueDate:`${y}-${String(m).padStart(2,'0')}-18`,problem:'鍊條斷裂',status:'processing',created:`${y}-${String(m).padStart(2,'0')}-12`}
+  ];
+  saveDB();
+}
+
+function getBaseCategories() {
+  return ['戒指','項鍊','耳環','耳釘','手環','手鐲','手珠串','腳鍊','吊墜','擺飾'];
+}
+function getAllCategories() {
+  return getBaseCategories().concat(DB.customCategories);
+}
+
+function populateFilters() {
+  const cats = getAllCategories();
+  const mats = ['純銀','黃金','白金','玫瑰金','22K','18K','14K','10K'].concat(DB.customMaterials);
+  const cf = document.getElementById('invCatFilter');
+  cf.innerHTML = '<option value="">所有類別</option>';
+  cats.forEach(c=>{ const o=document.createElement('option');o.value=c;o.textContent=c;cf.appendChild(o);});
+  const mf = document.getElementById('invMatFilter');
+  mf.innerHTML = '<option value="">所有材質</option>';
+  mats.forEach(m=>{ const o=document.createElement('option');o.value=m;o.textContent=m;mf.appendChild(o);});
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const lastMonth = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth()+1).padStart(2,'0')}`;
+
+  const thisSales = DB.sales.filter(s=>s.date.startsWith(thisMonth));
+  const lastSales = DB.sales.filter(s=>s.date.startsWith(lastMonth));
+  const thisMo = thisSales.reduce((a,s)=>a+s.total,0);
+  const lastMo = lastSales.reduce((a,s)=>a+s.total,0);
+  const totalStock = DB.products.reduce((a,p)=>a+p.stock,0);
+  const stockVal = DB.products.reduce((a,p)=>a+(p.price*p.stock),0);
+  const pendingRepair = DB.repairs.filter(r=>r.status==='pending'||r.status==='processing').length;
+  const kinds = new Set(DB.products.map(p=>p.category)).size;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">上月銷售額</div><div class="stat-value price-display">NT$ ${lastMo.toLocaleString()}</div><div class="stat-icon">📅</div></div>
+    <div class="stat-card"><div class="stat-label">本月銷售額</div><div class="stat-value price-display">NT$ ${thisMo.toLocaleString()}</div><div class="stat-icon">💰</div></div>
+    <div class="stat-card"><div class="stat-label">商品種類</div><div class="stat-value">${kinds}</div><div class="stat-icon">💍</div></div>
+    <div class="stat-card"><div class="stat-label">庫存總數量</div><div class="stat-value">${totalStock} 件</div><div class="stat-icon">📦</div></div>
+    <div class="stat-card"><div class="stat-label">庫存總值（售價）</div><div class="stat-value price-display">NT$ ${stockVal.toLocaleString()}</div><div class="stat-icon">💎</div></div>
+    <div class="stat-card"><div class="stat-label">待維修處理</div><div class="stat-value ${pendingRepair>0?'stock-low':''}">${pendingRepair} 件</div><div class="stat-icon">🔧</div></div>
+  `;
+
+  // Category chart
+  const catCount = {};
+  DB.products.forEach(p=>{ catCount[p.category]=(catCount[p.category]||0)+p.stock; });
+  renderChart('catChart','doughnut',Object.keys(catCount),Object.values(catCount),'商品類別分布');
+
+  // Sales trend
+  const days = [];
+  const dayTotals = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().split('T')[0];
+    days.push(ds.slice(5));
+    dayTotals.push(DB.sales.filter(s=>s.date===ds).reduce((a,s)=>a+s.total,0));
+  }
+  renderChart('salesTrendChart','line',days,dayTotals,'最近7天銷售');
+
+  // Repair dash
+  const pending = DB.repairs.filter(r=>r.status==='pending'||r.status==='processing');
+  const repDiv = document.getElementById('repairDash');
+  if(pending.length===0){
+    repDiv.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div>目前無待維修工單</div>';
+  } else {
+    repDiv.innerHTML = `<div class="table-wrap"><table><thead><tr><th>工單號</th><th>客戶</th><th>商品</th><th>狀態</th><th>預計完成</th></tr></thead><tbody>`+
+      pending.map(r=>`<tr><td>${r.orderNo}</td><td>${r.customerName}</td><td>${r.item}</td><td>${repairStatusBadge(r.status)}</td><td>${r.dueDate}</td></tr>`).join('')+
+      `</tbody></table></div>`;
+  }
+}
+
+function renderChart(id, type, labels, data, label) {
+  if(chartInstances[id]) { chartInstances[id].destroy(); }
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  const colors = ['#C9956C','#C9A84C','#9B6347','#6B4C36','#B8835A','#D4A882','#E8C5A8','#A67248'];
+  chartInstances[id] = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets:[{
+        label,
+        data,
+        backgroundColor: type==='doughnut'?colors:'rgba(201,149,108,0.2)',
+        borderColor: type==='doughnut'?colors.map(c=>c):'#C9956C',
+        borderWidth: type==='doughnut'?1:2,
+        fill: type==='line',
+        tension: 0.4,
+        pointBackgroundColor: '#C9956C'
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:type==='doughnut', position:'right', labels:{font:{size:11},boxWidth:12} } },
+      scales: type==='line'?{y:{beginAtZero:true,ticks:{callback:v=>'NT$'+v.toLocaleString()}}}:{},
+    }
+  });
+}
+
+// ============================================================
+// INVENTORY
+// ============================================================
+function renderInventory() {
+  const search = (document.getElementById('invSearch')||{}).value||'';
+  const cat = (document.getElementById('invCatFilter')||{}).value||'';
+  const mat = (document.getElementById('invMatFilter')||{}).value||'';
+  const sta = (document.getElementById('invStatusFilter')||{}).value||'';
+  const r = currentUser.role;
+
+  // Hide cost col if not boss
+  let prods = DB.products.filter(p=>{
+    if(search && !p.name.includes(search) && !p.code.includes(search)) return false;
+    if(cat && p.category!==cat) return false;
+    if(mat && p.material!==mat) return false;
+    if(sta && p.status!==sta) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('inventoryTbody');
+  if(!tbody) return;
+  if(prods.length===0){
+    tbody.innerHTML=`<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">💍</div>尚無商品</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = prods.map(p=>{
+    const photoData = DB.photosData[p.id+'_0'] || null;
+    const thumb = photoData ? `<img src="${photoData}" style="width:50px;height:50px;object-fit:cover;border-radius:6px;"/>` : `<div style="width:50px;height:50px;background:var(--rose-gold-pale);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;">💍</div>`;
+    const stockClass = p.stock===0?'stock-0':p.stock<3?'stock-low':'stock-ok';
+    const costCell = r==='boss' ? `<td class="price-display">NT$ ${(p.cost||0).toLocaleString()}</td>` : `<td style="color:var(--text-light)">---</td>`;
+    return `<tr>
+      <td>${thumb}</td>
+      <td>${p.code}</td>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.category}</td>
+      <td>${p.material}</td>
+      <td>${p.size||'-'}</td>
+      ${costCell}
+      <td class="price-display">NT$ ${(p.price||0).toLocaleString()}</td>
+      <td class="${stockClass}">${p.stock}</td>
+      <td><span class="badge ${p.status==='active'?'badge-active':'badge-inactive'}">${p.status==='active'?'上架中':'下架'}</span></td>
+      <td>
+        <div class="btn-group">
+          <button class="btn btn-secondary btn-sm" onclick="viewProduct('${p.id}')">查看</button>
+          <button class="btn btn-warning btn-sm" onclick="editProduct('${p.id}')">編輯</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">刪除</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openProductModal(id) {
+  editingProductId = null;
+  productPhotos = [null,null,null];
+  productPhotoFiles = [null,null,null];
+  document.getElementById('productModalTitle').textContent='新增商品';
+  document.getElementById('pCode').value='';
+  document.getElementById('pName').value='';
+  document.getElementById('pCost').value='';
+  document.getElementById('pPrice').value='';
+  document.getElementById('pStock').value='1';
+  document.getElementById('pSize').value='';
+  document.getElementById('pWeight').value='';
+  document.getElementById('pGem').value='';
+  document.getElementById('pDesc').value='';
+  // Reset photos
+  for(let i=0;i<3;i++){
+    const slot=document.getElementById('photoSlot'+i);
+    slot.innerHTML=`<div class="photo-label">📷<br>照片 ${i+1}</div><input type="file" accept="image/*" onchange="handlePhoto(${i},this)"/>`;
+  }
+  // Cost field visibility
+  document.getElementById('costFieldWrap').style.display = currentUser.role==='boss'?'flex':'none';
+  updateCategorySelect();
+  updateMaterialSelect();
+  renderCustomMatTags();
+  renderCustomCatTags();
+  openModal('productModal');
+}
+
+function editProduct(id) {
+  const p = DB.products.find(x=>x.id===id);
+  if(!p) return;
+  editingProductId = id;
+  productPhotos = [null,null,null];
+  productPhotoFiles = [null,null,null];
+  document.getElementById('productModalTitle').textContent='編輯商品';
+  document.getElementById('pCode').value=p.code;
+  document.getElementById('pName').value=p.name;
+  document.getElementById('pCost').value=p.cost||0;
+  document.getElementById('pPrice').value=p.price||0;
+  document.getElementById('pStock').value=p.stock||0;
+  document.getElementById('pSize').value=p.size||'';
+  document.getElementById('pWeight').value=p.weight||'';
+  document.getElementById('pGem').value=p.gem||'';
+  document.getElementById('pDesc').value=p.desc||'';
+  document.getElementById('pCategory').value=p.category;
+  document.getElementById('costFieldWrap').style.display = currentUser.role==='boss'?'flex':'none';
+  updateCategorySelect();
+  updateMaterialSelect();
+  renderCustomMatTags();
+  renderCustomCatTags();
+  document.getElementById('pCategory').value=p.category;
+  document.getElementById('pMaterial').value=p.material;
+  // Restore photos
+  for(let i=0;i<3;i++){
+    const key=p.id+'_'+i;
+    const photoData = DB.photosData[key];
+    const slot=document.getElementById('photoSlot'+i);
+    if(photoData){
+      slot.innerHTML=`<img src="${photoData}"/><input type="file" accept="image/*" onchange="handlePhoto(${i},this)"/>`;
+      productPhotos[i]=photoData;
+    } else {
+      slot.innerHTML=`<div class="photo-label">📷<br>照片 ${i+1}</div><input type="file" accept="image/*" onchange="handlePhoto(${i},this)"/>`;
+    }
+  }
+  openModal('productModal');
+}
+
+// 暫存照片的 File 物件（用於上傳）和預覽 URL
+let productPhotoFiles = [null, null, null]; // 原始 File 物件
+
+function handlePhoto(idx, input) {
+  const file = input.files[0];
+  if(!file) return;
+  productPhotoFiles[idx] = file; // 保存 File 物件供上傳用
+  const url = URL.createObjectURL(file);
+  productPhotos[idx] = url; // 本地預覽用
+  const slot = document.getElementById('photoSlot'+idx);
+  slot.innerHTML = `<img src="${url}"/><input type="file" accept="image/*" onchange="handlePhoto(${idx},this)"/>`;
+}
+
+async function uploadPhotoToStorage(productId, idx, file) {
+  if(!file) return null;
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${productId}_${idx}.${ext}`;
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/weifan-photos/${path}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': file.type,
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if(!res.ok) { console.error('Photo upload error:', await res.text()); return null; }
+  return `${SUPABASE_URL}/storage/v1/object/public/weifan-photos/${path}`;
+}
+
+function getPhotoUrl(productId, idx) {
+  // 先看 DB.photosData（存的是 Supabase 公開 URL 或本地預覽）
+  return DB.photosData[productId+'_'+idx] || null;
+}
+
+function updateCategorySelect() {
+  const sel = document.getElementById('pCategory');
+  const base = ['戒指','項鍊','耳環','耳釘','手環','手鐲','手珠串','腳鍊','吊墜','擺飾'];
+  const all = base.concat(DB.customCategories);
+  sel.innerHTML = all.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+
+async function addCustomCategory() {
+  const v = document.getElementById('pCustomCat').value.trim();
+  if(!v) { document.getElementById('pCustomCat').focus(); return; }
+  if(!DB.customCategories.includes(v)) {
+    DB.customCategories.push(v);
+    await dbSaveConfig(); populateFilters();
+  }
+  updateCategorySelect();
+  document.getElementById('pCategory').value = v;
+  document.getElementById('pCustomCat').value = '';
+  renderCustomCatTags();
+}
+
+function renderCustomCatTags() {
+  const wrap = document.getElementById('customCatTags');
+  if(!wrap) return;
+  if(DB.customCategories.length === 0) { wrap.innerHTML=''; return; }
+  wrap.innerHTML = '<span style="font-size:11px;color:var(--text-light);margin-right:4px;">已新增：</span>' +
+    DB.customCategories.map(c=>`
+      <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:var(--champagne);border:1px solid var(--border-color);border-radius:20px;font-size:12px;color:var(--text-medium);">
+        ${c}
+        <span onclick="removeCustomCategory('${c}')" style="cursor:pointer;color:var(--text-light);font-size:14px;line-height:1;" title="移除">×</span>
+      </span>`).join('');
+}
+
+async function removeCustomCategory(v) {
+  DB.customCategories = DB.customCategories.filter(c=>c!==v);
+  await dbSaveConfig(); populateFilters(); updateCategorySelect(); renderCustomCatTags();
+}
+
+
+function updateMaterialSelect() {
+  const sel = document.getElementById('pMaterial');
+  const base = ['純銀','黃金','白金','玫瑰金','22K','18K','14K','10K'];
+  const all = base.concat(DB.customMaterials);
+  sel.innerHTML = all.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+async function addCustomMaterial() {
+  const v = document.getElementById('pCustomMat').value.trim();
+  if(!v) { document.getElementById('pCustomMat').focus(); return; }
+  if(!DB.customMaterials.includes(v)) {
+    DB.customMaterials.push(v);
+    await dbSaveConfig(); populateFilters();
+  }
+  updateMaterialSelect();
+  document.getElementById('pMaterial').value = v;
+  document.getElementById('pCustomMat').value = '';
+  renderCustomMatTags();
+}
+
+function renderCustomMatTags() {
+  const wrap = document.getElementById('customMatTags');
+  if(!wrap) return;
+  if(DB.customMaterials.length === 0) { wrap.innerHTML=''; return; }
+  wrap.innerHTML = '<span style="font-size:11px;color:var(--text-light);margin-right:4px;">已新增：</span>' +
+    DB.customMaterials.map(m=>`
+      <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:var(--champagne);border:1px solid var(--border-color);border-radius:20px;font-size:12px;color:var(--text-medium);">
+        ${m}
+        <span onclick="removeCustomMaterial('${m}')" style="cursor:pointer;color:var(--text-light);font-size:14px;line-height:1;" title="移除">×</span>
+      </span>`).join('');
+}
+
+async function removeCustomMaterial(v) {
+  DB.customMaterials = DB.customMaterials.filter(m=>m!==v);
+  await dbSaveConfig(); populateFilters(); updateMaterialSelect(); renderCustomMatTags();
+}
+
+async function saveProduct() {
+  const code=document.getElementById('pCode').value.trim();
+  const name=document.getElementById('pName').value.trim();
+  const price=parseFloat(document.getElementById('pPrice').value)||0;
+  const stock=parseInt(document.getElementById('pStock').value)||0;
+  if(!code||!name||price<=0){
+    alert('請填入貨號、商品名稱及售價！');return;
+  }
+  const cost = currentUser.role==='boss' ? (parseFloat(document.getElementById('pCost').value)||0) : 0;
+  const id = editingProductId || ('p'+Date.now());
+  const prod = {
+    id, code, name,
+    category:document.getElementById('pCategory').value,
+    material:document.getElementById('pMaterial').value,
+    cost, price, stock,
+    size:document.getElementById('pSize').value.trim(),
+    weight:document.getElementById('pWeight').value.trim(),
+    gem:document.getElementById('pGem').value.trim(),
+    desc:document.getElementById('pDesc').value.trim(),
+    status: stock===0?'inactive':'active',
+    created: editingProductId ? DB.products.find(p=>p.id===editingProductId).created : new Date().toISOString().split('T')[0]
+  };
+  // 上傳照片到 Supabase Storage
+  showSyncStatus('⏳ 上傳照片中…', true);
+  for(let i=0;i<3;i++){
+    if(productPhotoFiles[i]) {
+      const url = await uploadPhotoToStorage(id, i, productPhotoFiles[i]);
+      if(url) DB.photosData[id+'_'+i] = url;
+    }
+  }
+  productPhotoFiles = [null,null,null]; // 清空暫存
+  try { localStorage.setItem('weifan_photos', JSON.stringify(DB.photosData)); } catch(e){}
+  if(editingProductId){
+    const idx=DB.products.findIndex(p=>p.id===editingProductId);
+    if(idx>-1) DB.products[idx]=prod;
+  } else {
+    DB.products.push(prod);
+  }
+  await dbSave('weifan_products', prod);
+  closeModal('productModal'); renderInventory();
+}
+
+function viewProduct(id) {
+  const p = DB.products.find(x=>x.id===id);
+  if(!p) return;
+  const photos = [0,1,2].map(i=>DB.photosData[p.id+'_'+i]).filter(Boolean);
+  const photoHTML = photos.length?
+    `<div style="display:grid;grid-template-columns:repeat(${photos.length},1fr);gap:8px;margin-bottom:20px;">`+
+    photos.map(ph=>`<img src="${ph}" style="width:100%;height:160px;object-fit:cover;border-radius:8px;"/>`).join('')+
+    `</div>`
+    :`<div style="text-align:center;padding:30px;background:var(--rose-gold-pale);border-radius:8px;font-size:40px;margin-bottom:20px;">💍</div>`;
+
+  const costRow = currentUser.role==='boss'?`<tr><td style="color:var(--text-light);padding:8px;">成本</td><td style="padding:8px;" class="price-display">NT$ ${(p.cost||0).toLocaleString()}</td></tr>`:'';
+  document.getElementById('viewProductContent').innerHTML=`
+    ${photoHTML}
+    <table style="width:100%;font-size:14px;">
+      <tr><td style="color:var(--text-light);padding:8px;width:30%;">貨號</td><td style="padding:8px;">${p.code}</td></tr>
+      <tr><td style="color:var(--text-light);padding:8px;">商品名稱</td><td style="padding:8px;"><strong>${p.name}</strong></td></tr>
+      <tr><td style="color:var(--text-light);padding:8px;">類別</td><td style="padding:8px;">${p.category}</td></tr>
+      <tr><td style="color:var(--text-light);padding:8px;">材質</td><td style="padding:8px;">${p.material}</td></tr>
+      ${costRow}
+      <tr><td style="color:var(--text-light);padding:8px;">售價</td><td style="padding:8px;" class="price-display">NT$ ${(p.price||0).toLocaleString()}</td></tr>
+      <tr><td style="color:var(--text-light);padding:8px;">庫存</td><td style="padding:8px;">${p.stock}</td></tr>
+      <tr><td style="color:var(--text-light);padding:8px;">尺寸</td><td style="padding:8px;">${p.size||'-'}</td></tr>
+      <tr><td style="color:var(--text-light);padding:8px;">重量</td><td style="padding:8px;">${p.weight||'-'}</td></tr>
+      <tr><td style="color:var(--text-light);padding:8px;">寶石說明</td><td style="padding:8px;">${p.gem||'-'}</td></tr>
+      <tr><td style="color:var(--text-light);padding:8px;">描述</td><td style="padding:8px;">${p.desc||'-'}</td></tr>
+      <tr><td style="color:var(--text-light);padding:8px;">狀態</td><td style="padding:8px;"><span class="badge ${p.status==='active'?'badge-active':'badge-inactive'}">${p.status==='active'?'上架中':'下架'}</span></td></tr>
+    </table>
+  `;
+  openModal('viewProductModal');
+}
+
+async function deleteProduct(id) {
+  if(!confirm('確定刪除此商品？此操作無法還原。')) return;
+  DB.products = DB.products.filter(p=>p.id!==id);
+  await dbDelete('weifan_products', id);
+  renderInventory();
+}
+
+function exportInventoryCSV() {
+  const r = currentUser.role;
+  const header = r==='boss'?'貨號,商品名稱,類別,材質,成本,售價,庫存,狀態\n':'貨號,商品名稱,類別,材質,售價,庫存,狀態\n';
+  const rows = DB.products.map(p=>r==='boss'?`${p.code},${p.name},${p.category},${p.material},${p.cost},${p.price},${p.stock},${p.status}`:
+    `${p.code},${p.name},${p.category},${p.material},${p.price},${p.stock},${p.status}`).join('\n');
+  downloadCSV('庫存報表.csv', header+rows);
+}
+
+// ============================================================
+// SALES
+// ============================================================
+function renderSales() {
+  const search=(document.getElementById('saleSearch')||{}).value||'';
+  const ds=(document.getElementById('saleDateStart')||{}).value||'';
+  const de=(document.getElementById('saleDateEnd')||{}).value||'';
+  let sales=[...DB.sales].sort((a,b)=>b.date.localeCompare(a.date));
+  if(search) sales=sales.filter(s=>s.customerName&&s.customerName.includes(search)||s.productName&&s.productName.includes(search)||s.orderNo&&s.orderNo.includes(search));
+  if(ds) sales=sales.filter(s=>s.date>=ds);
+  if(de) sales=sales.filter(s=>s.date<=de);
+  const tbody=document.getElementById('salesTbody');
+  if(!tbody) return;
+  if(sales.length===0){
+    tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🛍️</div>尚無銷售記錄</div></td></tr>`;return;
+  }
+  tbody.innerHTML=sales.map(s=>`<tr>
+    <td>${s.date}</td><td>${s.orderNo}</td>
+    <td>${s.productName}</td>
+    <td>${s.customerName||'無'}</td>
+    <td>${s.qty}</td>
+    <td class="price-display">NT$ ${s.total.toLocaleString()}</td>
+    <td>${s.payment}</td>
+    <td>${s.staffName}</td>
+    <td>
+      <div class="btn-group">
+        <button class="btn btn-warning btn-sm" onclick="editSale('${s.id}')">編輯</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSale('${s.id}')">刪除</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+function openSaleModal() {
+  editingSaleId = null;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('saleDate').value=today;
+  document.getElementById('saleCustomerSearch').value='';
+  document.getElementById('saleCustomerId').value='';
+  document.getElementById('selectedCustInfo').textContent='';
+  document.getElementById('custSearchResult').style.display='none';
+  document.getElementById('saleDiscount').value='0';
+  document.getElementById('saleActualPrice').value='';
+  document.getElementById('saleTotal').value='';
+  document.getElementById('saleNote').value='';
+  document.getElementById('saleQty').value='1';
+  clearSaleProduct();
+  openModal('saleModal');
+}
+
+function searchProductForSale(val) {
+  const res = document.getElementById('saleProductResult');
+  if(!val || val.length < 1) { res.style.display='none'; return; }
+  const found = DB.products.filter(p =>
+    (p.status==='active' && p.stock>0) &&
+    (p.code.toLowerCase().includes(val.toLowerCase()) || p.name.includes(val))
+  );
+  if(found.length===0) {
+    res.style.display='block';
+    res.innerHTML=`<div style="padding:12px 14px;font-size:13px;color:var(--text-light);">找不到符合的商品</div>`;
+    return;
+  }
+  res.style.display='block';
+  res.innerHTML = found.map(p => {
+    const thumb = DB.photosData[p.id+'_0']
+      ? `<img src="${DB.photosData[p.id+'_0']}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;"/>`
+      : `<div style="width:40px;height:40px;background:var(--rose-gold-pale);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">💍</div>`;
+    return `<div onclick="selectProductForSale('${p.id}')"
+      style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0e8e0;"
+      onmouseover="this.style.background='#fdf6f0'" onmouseout="this.style.background='#fff'">
+      ${thumb}
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:13px;color:var(--deep-brown);">${p.name}</div>
+        <div style="font-size:11px;color:var(--text-light);">貨號：${p.code}　${p.material}　庫存：${p.stock} 件</div>
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-size:14px;color:var(--rose-gold-dark);font-weight:600;">NT$ ${p.price.toLocaleString()}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectProductForSale(id) {
+  const p = DB.products.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('saleProductId').value = id;
+  document.getElementById('saleProductSearch').value = p.code;
+  document.getElementById('saleProductResult').style.display = 'none';
+  // Show product card
+  const card = document.getElementById('saleProductCard');
+  card.style.display = 'block';
+  const thumb = DB.photosData[p.id+'_0'];
+  document.getElementById('saleProductThumb').innerHTML = thumb
+    ? `<img src="${thumb}" style="width:52px;height:52px;object-fit:cover;"/>`
+    : '💍';
+  document.getElementById('saleProductName').textContent = p.name;
+  document.getElementById('saleProductMeta').textContent = `貨號：${p.code}　${p.material}　${p.category}${p.size?' | '+p.size:''}`;
+  const stockEl = document.getElementById('saleProductStock');
+  stockEl.innerHTML = `庫存：<span style="font-weight:600;color:${p.stock<3?'#e67e22':'#27ae60'}">${p.stock} 件</span>`;
+  document.getElementById('saleProductPrice').textContent = `NT$ ${p.price.toLocaleString()}`;
+  document.getElementById('saleActualPrice').value = p.price;
+  calcSaleTotal();
+}
+
+function clearSaleProduct() {
+  document.getElementById('saleProductId').value = '';
+  document.getElementById('saleProductSearch').value = '';
+  document.getElementById('saleProductResult').style.display = 'none';
+  document.getElementById('saleProductCard').style.display = 'none';
+  document.getElementById('saleActualPrice').value = '';
+  document.getElementById('saleTotal').value = '';
+}
+
+function calcSaleTotal() {
+  const qty=parseInt(document.getElementById('saleQty').value)||1;
+  const price=parseFloat(document.getElementById('saleActualPrice').value)||0;
+  const discount=parseFloat(document.getElementById('saleDiscount').value)||0;
+  document.getElementById('saleTotal').value=Math.max(0,(price*qty)-discount);
+}
+
+function searchCustomerBySale(val) {
+  const res=document.getElementById('custSearchResult');
+  if(!val||val.length<4){res.style.display='none';return;}
+  const found=DB.customers.filter(c=>c.phone.includes(val)||c.name.includes(val));
+  if(found.length===0){res.style.display='none';return;}
+  res.style.display='block';
+  res.innerHTML=found.map(c=>`<div onclick="selectCustForSale('${c.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #eee;font-size:13px;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">
+    <strong>${c.name}</strong> ${c.phone} — ${getLevelLabel(getLevel(c))}
+  </div>`).join('');
+}
+
+function selectCustForSale(id) {
+  const c=DB.customers.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('saleCustomerId').value=id;
+  document.getElementById('saleCustomerSearch').value=c.phone;
+  document.getElementById('selectedCustInfo').innerHTML=`<span class="badge ${getLevelClass(getLevel(c))}">${getLevelLabel(getLevel(c))}</span> ${c.name}`;
+  document.getElementById('custSearchResult').style.display='none';
+}
+
+function searchCustomerByRepair(val) {
+  const res=document.getElementById('rCustResult');
+  if(!val||val.length<4){res.style.display='none';return;}
+  const found=DB.customers.filter(c=>c.phone.includes(val)||c.name.includes(val));
+  if(found.length===0){res.style.display='none';return;}
+  res.style.display='block';
+  res.innerHTML=found.map(c=>`<div onclick="selectCustForRepair('${c.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #eee;font-size:13px;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">
+    <strong>${c.name}</strong> ${c.phone}
+  </div>`).join('');
+}
+
+function selectCustForRepair(id) {
+  const c=DB.customers.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('rCustomerId').value=id;
+  document.getElementById('rCustSearch').value=c.phone;
+  document.getElementById('rCustInfo').textContent=c.name;
+  document.getElementById('rCustResult').style.display='none';
+}
+
+async function saveSale() {
+  const productId=document.getElementById('saleProductId').value;
+  const date=document.getElementById('saleDate').value;
+  const qty=parseInt(document.getElementById('saleQty').value)||1;
+  const total=parseFloat(document.getElementById('saleTotal').value)||0;
+  if(!productId||!date||total<=0){alert('請填入日期、商品及金額！');return;}
+  const prod=DB.products.find(p=>p.id===productId);
+  if(!prod){alert('找不到商品');return;}
+  if(!editingSaleId && prod.stock<qty){alert('庫存不足！');return;}
+
+  const customerId=document.getElementById('saleCustomerId').value||null;
+  const cust=customerId?DB.customers.find(c=>c.id===customerId):null;
+  const orderNo=editingSaleId?DB.sales.find(s=>s.id===editingSaleId).orderNo:
+    'SO-'+date.replace(/-/g,'')+'-'+String(DB.sales.length+1).padStart(3,'0');
+
+  const sale = {
+    id:editingSaleId||('s'+Date.now()),
+    orderNo, date, productId,
+    productName:prod.name,
+    customerId:customerId||null,
+    customerName:cust?cust.name:'無',
+    qty,
+    unitPrice:parseFloat(document.getElementById('saleActualPrice').value)||0,
+    discount:parseFloat(document.getElementById('saleDiscount').value)||0,
+    total,
+    payment:document.getElementById('salePayment').value,
+    note:document.getElementById('saleNote').value,
+    staffId:currentUser.id,
+    staffName:currentUser.name
+  };
+
+  if(editingSaleId){
+    const old=DB.sales.find(s=>s.id===editingSaleId);
+    const oldProd=DB.products.find(p=>p.id===old.productId);
+    if(oldProd){ oldProd.stock+=old.qty; if(oldProd.stock>0)oldProd.status='active'; await dbSave('weifan_products',oldProd); }
+    if(old.customerId){const oc=DB.customers.find(c=>c.id===old.customerId);if(oc){oc.totalSpend=Math.max(0,oc.totalSpend-old.total);oc.purchases=Math.max(0,oc.purchases-1);await dbSave('weifan_customers',oc);}}
+    const idx=DB.sales.findIndex(s=>s.id===editingSaleId);
+    if(idx>-1)DB.sales[idx]=sale;
+  } else {
+    DB.sales.push(sale);
+  }
+  prod.stock-=qty;
+  if(prod.stock<=0){ prod.stock=0; prod.status='inactive'; }
+  if(cust){ cust.totalSpend=(cust.totalSpend||0)+total; cust.purchases=(cust.purchases||0)+1; }
+  await Promise.all([
+    dbSave('weifan_sales', sale),
+    dbSave('weifan_products', prod),
+    cust ? dbSave('weifan_customers', cust) : Promise.resolve()
+  ]);
+  closeModal('saleModal'); renderSales(); if(document.getElementById('page-dashboard').classList.contains('active'))renderDashboard();
+}
+
+function editSale(id) {
+  const s=DB.sales.find(x=>x.id===id);
+  if(!s) return;
+  editingSaleId=id;
+  document.getElementById('saleDate').value=s.date;
+  document.getElementById('saleQty').value=s.qty;
+  document.getElementById('saleActualPrice').value=s.unitPrice;
+  document.getElementById('saleDiscount').value=s.discount;
+  document.getElementById('saleTotal').value=s.total;
+  document.getElementById('salePayment').value=s.payment;
+  document.getElementById('saleNote').value=s.note||'';
+  // Restore product
+  const p = DB.products.find(x=>x.id===s.productId);
+  if(p) {
+    document.getElementById('saleProductId').value=p.id;
+    document.getElementById('saleProductSearch').value=p.code;
+    document.getElementById('saleProductResult').style.display='none';
+    document.getElementById('saleProductCard').style.display='block';
+    const thumb=DB.photosData[p.id+'_0'];
+    document.getElementById('saleProductThumb').innerHTML=thumb?`<img src="${thumb}" style="width:52px;height:52px;object-fit:cover;"/>`:'💍';
+    document.getElementById('saleProductName').textContent=p.name;
+    document.getElementById('saleProductMeta').textContent=`貨號：${p.code}　${p.material}　${p.category}`;
+    document.getElementById('saleProductStock').innerHTML=`庫存：<span style="font-weight:600;">${p.stock} 件</span>`;
+    document.getElementById('saleProductPrice').textContent=`NT$ ${p.price.toLocaleString()}`;
+  }
+  if(s.customerId){
+    document.getElementById('saleCustomerId').value=s.customerId;
+    document.getElementById('saleCustomerSearch').value=DB.customers.find(c=>c.id===s.customerId)?.phone||'';
+    document.getElementById('selectedCustInfo').textContent=s.customerName;
+  }
+  document.getElementById('custSearchResult').style.display='none';
+  openModal('saleModal');
+}
+
+async function deleteSale(id) {
+  if(!confirm('確定刪除此銷售記錄？')) return;
+  const s=DB.sales.find(x=>x.id===id);
+  if(s){
+    const prod=DB.products.find(p=>p.id===s.productId);
+    if(prod){ prod.stock+=s.qty; if(prod.stock>0)prod.status='active'; await dbSave('weifan_products',prod); }
+    if(s.customerId){const c=DB.customers.find(x=>x.id===s.customerId);if(c){c.totalSpend=Math.max(0,c.totalSpend-s.total);c.purchases=Math.max(0,c.purchases-1);await dbSave('weifan_customers',c);}}
+  }
+  DB.sales=DB.sales.filter(x=>x.id!==id);
+  await dbDelete('weifan_sales',id);
+  renderSales();
+}
+
+function exportSalesCSV() {
+  const r=currentUser.role;
+  let header='日期,單號,商品,客戶,數量,金額,付款方式,員工\n';
+  const rows=DB.sales.map(s=>`${s.date},${s.orderNo},${s.productName},${s.customerName||'無'},${s.qty},${s.total},${s.payment},${s.staffName}`).join('\n');
+  downloadCSV('銷售記錄.csv',header+rows);
+}
+
+// ============================================================
+// REPAIR
+// ============================================================
+function repairStatusBadge(s) {
+  const map={pending:'<span class="badge badge-repair">待處理</span>',processing:'<span class="badge" style="background:#cce5ff;color:#004085;">維修中</span>',done:'<span class="badge badge-active">已完成</span>',pickup:'<span class="badge badge-silver">已取件</span>'};
+  return map[s]||s;
+}
+
+function renderRepair() {
+  const search=(document.getElementById('repairSearch')||{}).value||'';
+  const sta=(document.getElementById('repairStatusFilter')||{}).value||'';
+  let repairs=[...DB.repairs].sort((a,b)=>b.date.localeCompare(a.date));
+  if(search) repairs=repairs.filter(r=>r.customerName.includes(search)||r.orderNo.includes(search)||r.item.includes(search));
+  if(sta) repairs=repairs.filter(r=>r.status===sta);
+  const tbody=document.getElementById('repairTbody');
+  if(!tbody)return;
+  if(repairs.length===0){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🔧</div>尚無維修記錄</div></td></tr>`;return;}
+  tbody.innerHTML=repairs.map(r=>`<tr>
+    <td>${r.orderNo}</td><td>${r.date}</td><td>${r.customerName||'無'}</td>
+    <td>${r.item}</td><td>${r.problem}</td>
+    <td class="price-display">NT$ ${(r.fee||0).toLocaleString()}</td>
+    <td>${r.dueDate||'-'}</td><td>${repairStatusBadge(r.status)}</td>
+    <td>
+      <div class="btn-group">
+        <button class="btn btn-warning btn-sm" onclick="editRepair('${r.id}')">編輯</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRepair('${r.id}')">刪除</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+function openRepairModal() {
+  editingRepairId=null;
+  document.getElementById('repairModalTitle').textContent='新增維修工單';
+  const no='RP-'+String(DB.repairs.length+1).padStart(3,'0');
+  document.getElementById('rOrderNo').value=no;
+  document.getElementById('rDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('rCustSearch').value='';
+  document.getElementById('rCustomerId').value='';
+  document.getElementById('rCustInfo').textContent='';
+  document.getElementById('rCustResult').style.display='none';
+  document.getElementById('rItem').value='';
+  document.getElementById('rProblem').value='';
+  document.getElementById('rFee').value='';
+  document.getElementById('rDueDate').value='';
+  document.getElementById('rStatus').value='pending';
+  openModal('repairModal');
+}
+
+function editRepair(id) {
+  const r=DB.repairs.find(x=>x.id===id);
+  if(!r)return;
+  editingRepairId=id;
+  document.getElementById('repairModalTitle').textContent='編輯工單';
+  document.getElementById('rOrderNo').value=r.orderNo;
+  document.getElementById('rDate').value=r.date;
+  document.getElementById('rCustomerId').value=r.customerId||'';
+  document.getElementById('rCustSearch').value=r.customerId?(DB.customers.find(c=>c.id===r.customerId)?.phone||''):'';
+  document.getElementById('rCustInfo').textContent=r.customerName||'';
+  document.getElementById('rCustResult').style.display='none';
+  document.getElementById('rItem').value=r.item;
+  document.getElementById('rType').value=r.type;
+  document.getElementById('rProblem').value=r.problem;
+  document.getElementById('rFee').value=r.fee||0;
+  document.getElementById('rDueDate').value=r.dueDate||'';
+  document.getElementById('rStatus').value=r.status;
+  openModal('repairModal');
+}
+
+async function saveRepair() {
+  const item=document.getElementById('rItem').value.trim();
+  const problem=document.getElementById('rProblem').value.trim();
+  const date=document.getElementById('rDate').value;
+  if(!item||!problem||!date){alert('請填入商品描述、問題說明及收件日期！');return;}
+  const customerId=document.getElementById('rCustomerId').value||null;
+  const cust=customerId?DB.customers.find(c=>c.id===customerId):null;
+  const repair={
+    id:editingRepairId||('r'+Date.now()),
+    orderNo:document.getElementById('rOrderNo').value,
+    date, customerId,
+    customerName:cust?cust.name:'無',
+    item,
+    type:document.getElementById('rType').value,
+    fee:parseFloat(document.getElementById('rFee').value)||0,
+    dueDate:document.getElementById('rDueDate').value,
+    problem,
+    status:document.getElementById('rStatus').value,
+    created:editingRepairId?DB.repairs.find(r=>r.id===editingRepairId).created:date
+  };
+  if(editingRepairId){const idx=DB.repairs.findIndex(r=>r.id===editingRepairId);if(idx>-1)DB.repairs[idx]=repair;}
+  else DB.repairs.push(repair);
+  await dbSave('weifan_repairs',repair);
+  closeModal('repairModal');renderRepair();
+}
+
+async function deleteRepair(id){
+  if(!confirm('確定刪除此工單？'))return;
+  DB.repairs=DB.repairs.filter(r=>r.id!==id);
+  await dbDelete('weifan_repairs',id);
+  renderRepair();
+}
+
+function exportRepairCSV(){
+  const header='工單號,日期,客戶,商品,問題,維修費,預計完成,狀態\n';
+  const rows=DB.repairs.map(r=>`${r.orderNo},${r.date},${r.customerName||'無'},${r.item},${r.problem},${r.fee||0},${r.dueDate||''},${r.status}`).join('\n');
+  downloadCSV('維修記錄.csv',header+rows);
+}
+
+// ============================================================
+// CUSTOMERS
+// ============================================================
+function getLevel(c) {
+  if(c.manualLevel&&c.manualLevel!='auto') return c.manualLevel;
+  const s=c.totalSpend||0;
+  if(s>=100000) return 'diamond';
+  if(s>=50001) return 'platinum';
+  if(s>=30001) return 'gold';
+  if(s>=12001) return 'silver';
+  return 'copper';
+}
+function getLevelLabel(l){
+  return {copper:'🥉 銅卡',silver:'🥈 銀卡',gold:'🥇 金卡',platinum:'💎 白金VIP',diamond:'💠 鑽石VVIP'}[l]||l;
+}
+function getLevelClass(l){
+  return {copper:'badge-copper',silver:'badge-silver',gold:'badge-gold',platinum:'badge-platinum',diamond:'badge-diamond'}[l]||'';
+}
+
+function renderCustomers() {
+  const search=(document.getElementById('custSearch')||{}).value||'';
+  const level=(document.getElementById('custLevelFilter')||{}).value||'';
+  let custs=[...DB.customers].sort((a,b)=>b.totalSpend-a.totalSpend);
+  if(search) custs=custs.filter(c=>c.name.includes(search)||c.phone.includes(search)||(c.email&&c.email.includes(search)));
+  if(level) custs=custs.filter(c=>getLevel(c)===level);
+  const tbody=document.getElementById('customersTbody');
+  if(!tbody)return;
+  if(custs.length===0){tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">👥</div>尚無客戶資料</div></td></tr>`;return;}
+  tbody.innerHTML=custs.map(c=>`<tr>
+    <td><span class="badge ${getLevelClass(getLevel(c))}">${getLevelLabel(getLevel(c))}</span></td>
+    <td><strong>${c.name}</strong></td>
+    <td>${c.phone}</td>
+    <td>${c.birthday||'-'}</td>
+    <td class="price-display">NT$ ${(c.totalSpend||0).toLocaleString()}</td>
+    <td>${c.purchases||0} 次</td>
+    <td>${c.note||'-'}</td>
+    <td>
+      <div class="btn-group">
+        <button class="btn btn-secondary btn-sm" onclick="openCustHistory('${c.id}')">📋 記錄</button>
+        <button class="btn btn-warning btn-sm" onclick="editCustomer('${c.id}')">編輯</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">刪除</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+function openCustomerModal(){
+  editingCustomerId=null;
+  document.getElementById('custModalTitle').textContent='新增客戶';
+  ['cName','cPhone','cEmail','cAddress','cNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cBirthday').value='';
+  document.getElementById('cGender').value='';
+  document.getElementById('cLevel').value='auto';
+  openModal('customerModal');
+}
+
+function editCustomer(id){
+  const c=DB.customers.find(x=>x.id===id);if(!c)return;
+  editingCustomerId=id;
+  document.getElementById('custModalTitle').textContent='編輯客戶';
+  document.getElementById('cName').value=c.name;
+  document.getElementById('cPhone').value=c.phone;
+  document.getElementById('cEmail').value=c.email||'';
+  document.getElementById('cBirthday').value=c.birthday||'';
+  document.getElementById('cGender').value=c.gender||'';
+  document.getElementById('cAddress').value=c.address||'';
+  document.getElementById('cNote').value=c.note||'';
+  document.getElementById('cLevel').value=c.manualLevel||'auto';
+  openModal('customerModal');
+}
+
+async function saveCustomer(){
+  const name=document.getElementById('cName').value.trim();
+  const phone=document.getElementById('cPhone').value.trim();
+  if(!name||!phone){alert('請填入姓名及手機！');return;}
+  const level=document.getElementById('cLevel').value;
+  const cust={
+    id:editingCustomerId||('c'+Date.now()),
+    name,phone,
+    email:document.getElementById('cEmail').value.trim(),
+    birthday:document.getElementById('cBirthday').value,
+    gender:document.getElementById('cGender').value,
+    address:document.getElementById('cAddress').value.trim(),
+    note:document.getElementById('cNote').value.trim(),
+    manualLevel:level==='auto'?null:level,
+    totalSpend:editingCustomerId?DB.customers.find(c=>c.id===editingCustomerId).totalSpend:0,
+    purchases:editingCustomerId?DB.customers.find(c=>c.id===editingCustomerId).purchases:0,
+    created:editingCustomerId?DB.customers.find(c=>c.id===editingCustomerId).created:new Date().toISOString().split('T')[0]
+  };
+  if(editingCustomerId){const idx=DB.customers.findIndex(c=>c.id===editingCustomerId);if(idx>-1)DB.customers[idx]=cust;}
+  else DB.customers.push(cust);
+  await dbSave('weifan_customers',cust);
+  closeModal('customerModal');renderCustomers();
+}
+
+async function deleteCustomer(id){
+  if(!confirm('確定刪除此客戶資料？'))return;
+  DB.customers=DB.customers.filter(c=>c.id!==id);
+  await dbDelete('weifan_customers',id);
+  renderCustomers();
+}
+
+function openCustHistory(id) {
+  const c = DB.customers.find(x=>x.id===id);
+  if(!c) return;
+
+  // Header
+  document.getElementById('custHistoryTitle').textContent = c.name + ' 的消費記錄';
+  document.getElementById('custHistoryMeta').textContent = c.phone + (c.email ? '　' + c.email : '');
+
+  // Member card
+  const lv = getLevel(c);
+  const lvColors = {
+    copper:  'linear-gradient(135deg,#C9956C,#9B6347)',
+    silver:  'linear-gradient(135deg,#9E9E9E,#616161)',
+    gold:    'linear-gradient(135deg,#C9A84C,#8B6914)',
+    platinum:'linear-gradient(135deg,#7B8FA1,#4A6274)',
+    diamond: 'linear-gradient(135deg,#5B8DB8,#2C5F8A)'
+  };
+  const lvIcons = { copper:'🥉', silver:'🥈', gold:'🥇', platinum:'💎', diamond:'💠' };
+  document.getElementById('custHistoryCard').innerHTML = `
+    <div style="background:${lvColors[lv]||lvColors.copper};border-radius:14px;padding:18px 22px;color:#fff;position:relative;overflow:hidden;">
+      <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:56px;opacity:0.15;">${lvIcons[lv]||'🥉'}</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:52px;height:52px;background:rgba(255,255,255,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;">${lvIcons[lv]||'🥉'}</div>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;">${c.name}</div>
+          <div style="font-size:12px;opacity:0.85;margin-top:2px;">${getLevelLabel(lv)}　${c.gender||''}　${c.birthday?'生日：'+c.birthday:''}</div>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div style="font-size:11px;opacity:0.75;margin-bottom:4px;">累積消費</div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;">NT$ ${(c.totalSpend||0).toLocaleString()}</div>
+        </div>
+      </div>
+      ${buildLevelProgressBar(c)}
+    </div>`;
+
+  // Stats
+  const purchases = DB.sales.filter(s=>s.customerId===id);
+  const repairs   = DB.repairs.filter(r=>r.customerId===id);
+  const totalSpend = purchases.reduce((a,s)=>a+s.total,0);
+  const avgOrder   = purchases.length ? Math.round(totalSpend/purchases.length) : 0;
+  const lastDate   = purchases.length ? purchases.sort((a,b)=>b.date.localeCompare(a.date))[0].date : '-';
+  document.getElementById('custHistoryStats').innerHTML = `
+    <div class="stat-card" style="padding:14px;"><div class="stat-label">購買次數</div><div class="stat-value">${purchases.length} 次</div></div>
+    <div class="stat-card" style="padding:14px;"><div class="stat-label">維修次數</div><div class="stat-value">${repairs.length} 次</div></div>
+    <div class="stat-card" style="padding:14px;"><div class="stat-label">平均客單價</div><div class="stat-value price-display" style="font-size:16px;">NT$ ${avgOrder.toLocaleString()}</div></div>
+    <div class="stat-card" style="padding:14px;"><div class="stat-label">最近消費日</div><div class="stat-value" style="font-size:15px;">${lastDate}</div></div>`;
+
+  // Purchase table
+  const sorted = [...purchases].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('custPurchaseTbody').innerHTML = sorted.length
+    ? sorted.map(s=>`<tr>
+        <td>${s.date}</td>
+        <td style="font-size:11px;color:var(--text-light);">${s.orderNo}</td>
+        <td><strong>${s.productName}</strong></td>
+        <td>${s.qty}</td>
+        <td class="price-display">NT$ ${s.total.toLocaleString()}</td>
+        <td>${s.payment}</td>
+        <td style="font-size:12px;color:var(--text-light);">${s.note||'-'}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🛍️</div>尚無購買記錄</div></td></tr>`;
+
+  // Repair table
+  const sortedR = [...repairs].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('custRepairTbody').innerHTML = sortedR.length
+    ? sortedR.map(r=>`<tr>
+        <td>${r.date}</td>
+        <td style="font-size:11px;color:var(--text-light);">${r.orderNo}</td>
+        <td>${r.item}</td>
+        <td style="font-size:12px;">${r.problem}</td>
+        <td class="price-display">NT$ ${(r.fee||0).toLocaleString()}</td>
+        <td>${repairStatusBadge(r.status)}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🔧</div>尚無維修記錄</div></td></tr>`;
+
+  // Reset tab
+  switchHistoryTab('purchase');
+  openModal('custHistoryModal');
+}
+
+function buildLevelProgressBar(c) {
+  const thresholds = [
+    {lv:'copper',  label:'銅卡',   min:0,      max:12000},
+    {lv:'silver',  label:'銀卡',   min:12001,  max:30000},
+    {lv:'gold',    label:'金卡',   min:30001,  max:50000},
+    {lv:'platinum',label:'白金VIP',min:50001,  max:100000},
+    {lv:'diamond', label:'鑽石',   min:100001, max:null}
+  ];
+  const spend = c.totalSpend || 0;
+  const lv = getLevel(c);
+  if(lv==='diamond') return `<div style="margin-top:12px;font-size:12px;opacity:0.8;">🏆 已達最高等級 鑽石VVIP</div>`;
+  const cur = thresholds.find(t=>t.lv===lv);
+  const next = thresholds[thresholds.indexOf(cur)+1];
+  if(!cur||!next) return '';
+  const pct = Math.min(100, Math.round(((spend - cur.min) / (next.min - cur.min))*100));
+  const need = next.min - spend;
+  return `
+    <div style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;opacity:0.8;margin-bottom:4px;">
+        <span>距離 ${next.label} 升級</span>
+        <span>還差 NT$ ${need.toLocaleString()}</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.2);border-radius:20px;height:8px;overflow:hidden;">
+        <div style="background:rgba(255,255,255,0.85);height:100%;border-radius:20px;width:${pct}%;transition:width 0.5s;"></div>
+      </div>
+    </div>`;
+}
+
+function switchHistoryTab(tab) {
+  document.getElementById('historyPurchaseTab').style.display = tab==='purchase'?'block':'none';
+  document.getElementById('historyRepairTab').style.display   = tab==='repair'?'block':'none';
+  const tP = document.getElementById('hTabPurchase');
+  const tR = document.getElementById('hTabRepair');
+  const active = 'color:var(--rose-gold-dark);border-bottom:2px solid var(--rose-gold);margin-bottom:-2px;font-weight:600;padding:8px 18px;cursor:pointer;font-size:13px;';
+  const idle   = 'color:var(--text-light);border-bottom:2px solid transparent;margin-bottom:-2px;padding:8px 18px;cursor:pointer;font-size:13px;';
+  tP.style.cssText = tab==='purchase' ? active : idle;
+  tR.style.cssText = tab==='repair'   ? active : idle;
+}
+
+
+function exportCustomersCSV(){
+  const header='姓名,手機,Email,生日,等級,累積消費,購買次數\n';
+  const rows=DB.customers.map(c=>`${c.name},${c.phone},${c.email||''},${c.birthday||''},${getLevelLabel(getLevel(c))},${c.totalSpend||0},${c.purchases||0}`).join('\n');
+  downloadCSV('客戶資料.csv',header+rows);
+}
+
+// ============================================================
+// REPORTS
+// ============================================================
+function switchReportTab(name,el){
+  document.querySelectorAll('.report-tab').forEach(t=>t.style.display='none');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('report-'+name).style.display='block';
+  el.classList.add('active');
+  renderReportSection(name);
+}
+
+function applyReportFilter(){
+  rptFilter.start=document.getElementById('rptStart').value||null;
+  rptFilter.end=document.getElementById('rptEnd').value||null;
+  renderReports();
+}
+
+function getFilteredSales(){
+  let sales=DB.sales;
+  if(rptFilter.start) sales=sales.filter(s=>s.date>=rptFilter.start);
+  if(rptFilter.end) sales=sales.filter(s=>s.date<=rptFilter.end);
+  return sales;
+}
+
+function renderReports(){
+  // Set default date range
+  if(!document.getElementById('rptStart').value){
+    const y=new Date().getFullYear();
+    document.getElementById('rptStart').value=`${y}-01-01`;
+    document.getElementById('rptEnd').value=new Date().toISOString().split('T')[0];
+    rptFilter.start=`${y}-01-01`;
+    rptFilter.end=new Date().toISOString().split('T')[0];
+  }
+  // Profit tab only for boss
+  document.getElementById('tabProfit').style.display=currentUser.role==='boss'?'block':'none';
+  renderReportSection('overview');
+}
+
+function renderReportSection(name){
+  if(name==='overview') renderOverviewReport();
+  if(name==='inventory_val') renderInventoryValReport();
+  if(name==='bestseller') renderBestsellerReport();
+  if(name==='profit' && currentUser.role==='boss') renderProfitReport();
+}
+
+function renderOverviewReport(){
+  const sales=getFilteredSales();
+  const totalSales=sales.reduce((a,s)=>a+s.total,0);
+  const totalCost=sales.reduce((a,s)=>{const p=DB.products.find(x=>x.id===s.productId);return a+(p?p.cost*s.qty:0);},0);
+  const totalProfit=totalSales-totalCost;
+  const stockCost=DB.products.reduce((a,p)=>a+(p.cost*p.stock),0);
+  const stockVal=DB.products.reduce((a,p)=>a+(p.price*p.stock),0);
+
+  const showProfit = currentUser.role==='boss';
+  document.getElementById('rptStatsGrid').innerHTML=`
+    <div class="stat-card"><div class="stat-label">累積銷售額</div><div class="stat-value price-display">NT$ ${totalSales.toLocaleString()}</div></div>
+    ${showProfit?`<div class="stat-card"><div class="stat-label">累積利潤</div><div class="stat-value price-display">NT$ ${totalProfit.toLocaleString()}</div></div>`:''}
+    <div class="stat-card"><div class="stat-label">庫存成本值</div><div class="stat-value price-display">NT$ ${stockCost.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">庫存售價值</div><div class="stat-value price-display">NT$ ${stockVal.toLocaleString()}</div></div>
+  `;
+
+  // Monthly trend
+  const monthly={};
+  sales.forEach(s=>{const m=s.date.slice(0,7);monthly[m]=(monthly[m]||0)+s.total;});
+  const months=Object.keys(monthly).sort();
+  renderChart('rptMonthChart','line',months,months.map(m=>monthly[m]),'月銷售額');
+
+  // Material pie
+  const matSales={};
+  sales.forEach(s=>{const p=DB.products.find(x=>x.id===s.productId);if(p)matSales[p.material]=(matSales[p.material]||0)+s.total;});
+  renderChart('rptMaterialChart','doughnut',Object.keys(matSales),Object.values(matSales),'材質銷售佔比');
+}
+
+function renderInventoryValReport(){
+  const div=document.getElementById('invValContent');
+  const grouped={};
+  DB.products.forEach(p=>{
+    if(!grouped[p.category]) grouped[p.category]={items:[],costTotal:0,priceTotal:0};
+    grouped[p.category].items.push(p);
+    grouped[p.category].costTotal+=(p.cost||0)*p.stock;
+    grouped[p.category].priceTotal+=p.price*p.stock;
+  });
+  let html=`<div class="card-title">庫存價值明細</div><div class="table-wrap"><table>
+    <thead><tr><th>類別</th><th>商品數</th><th>庫存件數</th>${currentUser.role==='boss'?'<th>成本總值</th>':''}<th>售價總值</th></tr></thead><tbody>`;
+  Object.entries(grouped).forEach(([cat,g])=>{
+    const count=g.items.length, stock=g.items.reduce((a,p)=>a+p.stock,0);
+    html+=`<tr><td>${cat}</td><td>${count}</td><td>${stock}</td>${currentUser.role==='boss'?`<td class="price-display">NT$ ${g.costTotal.toLocaleString()}</td>`:''}<td class="price-display">NT$ ${g.priceTotal.toLocaleString()}</td></tr>`;
+  });
+  const totCost=DB.products.reduce((a,p)=>a+(p.cost||0)*p.stock,0);
+  const totPrice=DB.products.reduce((a,p)=>a+p.price*p.stock,0);
+  html+=`<tr style="font-weight:600;background:var(--rose-gold-pale);"><td>合計</td><td>${DB.products.length}</td><td>${DB.products.reduce((a,p)=>a+p.stock,0)}</td>${currentUser.role==='boss'?`<td class="price-display">NT$ ${totCost.toLocaleString()}</td>`:''}<td class="price-display">NT$ ${totPrice.toLocaleString()}</td></tr>`;
+  html+=`</tbody></table></div>`;
+  div.innerHTML=html;
+}
+
+function renderBestsellerReport(){
+  const sales=getFilteredSales();
+  // By material
+  const matMap={};
+  sales.forEach(s=>{const p=DB.products.find(x=>x.id===s.productId);if(p){if(!matMap[p.material])matMap[p.material]={qty:0,total:0};matMap[p.material].qty+=s.qty;matMap[p.material].total+=s.total;}});
+  const matSorted=Object.entries(matMap).sort((a,b)=>b[1].qty-a[1].qty);
+  document.getElementById('bsMaterialList').innerHTML=matSorted.length?
+    matSorted.map((([m,v],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--rose-gold-pale);">
+      <span style="width:24px;height:24px;background:var(--rose-gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">${i+1}</span>
+      <div style="flex:1;"><div style="font-weight:600;">${m}</div><div style="font-size:12px;color:var(--text-light);">NT$ ${v.total.toLocaleString()}</div></div>
+      <div style="font-weight:600;color:var(--rose-gold-dark);">${v.qty} 件</div>
+    </div>`)).join('')
+    :'<div class="empty-state">無資料</div>';
+
+  // By category
+  const catMap={};
+  sales.forEach(s=>{const p=DB.products.find(x=>x.id===s.productId);if(p){if(!catMap[p.category])catMap[p.category]={qty:0,total:0};catMap[p.category].qty+=s.qty;catMap[p.category].total+=s.total;}});
+  const catSorted=Object.entries(catMap).sort((a,b)=>b[1].qty-a[1].qty);
+  document.getElementById('bsCategoryList').innerHTML=catSorted.length?
+    catSorted.map(([c,v],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--rose-gold-pale);">
+      <span style="width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">${i+1}</span>
+      <div style="flex:1;"><div style="font-weight:600;">${c}</div><div style="font-size:12px;color:var(--text-light);">NT$ ${v.total.toLocaleString()}</div></div>
+      <div style="font-weight:600;color:var(--rose-gold-dark);">${v.qty} 件</div>
+    </div>`).join('')
+    :'<div class="empty-state">無資料</div>';
+}
+
+function renderProfitReport(){
+  if(currentUser.role!=='boss') return;
+  const sales=getFilteredSales();
+  const totalSales=sales.reduce((a,s)=>a+s.total,0);
+  const totalCost=sales.reduce((a,s)=>{const p=DB.products.find(x=>x.id===s.productId);return a+(p?p.cost*s.qty:0);},0);
+  const totalProfit=totalSales-totalCost;
+  const avgMargin=totalSales>0?((totalProfit/totalSales)*100).toFixed(1):0;
+  document.getElementById('profitStats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">總銷售收入</div><div class="stat-value price-display">NT$ ${totalSales.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">銷售商品成本</div><div class="stat-value price-display">NT$ ${totalCost.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">總利潤</div><div class="stat-value price-display">NT$ ${totalProfit.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">平均毛利率</div><div class="stat-value">${avgMargin}%</div></div>
+  `;
+  const monthly={sales:{},cost:{}};
+  sales.forEach(s=>{
+    const m=s.date.slice(0,7);
+    monthly.sales[m]=(monthly.sales[m]||0)+s.total;
+    const p=DB.products.find(x=>x.id===s.productId);
+    monthly.cost[m]=(monthly.cost[m]||0)+(p?p.cost*s.qty:0);
+  });
+  const months=Object.keys(monthly.sales).sort();
+  if(chartInstances['rptProfitChart']) chartInstances['rptProfitChart'].destroy();
+  const ctx=document.getElementById('rptProfitChart');
+  if(ctx) chartInstances['rptProfitChart']=new Chart(ctx,{
+    type:'bar',
+    data:{labels:months,datasets:[
+      {label:'銷售額',data:months.map(m=>monthly.sales[m]||0),backgroundColor:'rgba(201,149,108,0.7)',borderColor:'#C9956C',borderWidth:1},
+      {label:'成本',data:months.map(m=>monthly.cost[m]||0),backgroundColor:'rgba(201,168,76,0.7)',borderColor:'#C9A84C',borderWidth:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'NT$'+v.toLocaleString()}}}}
+  });
+}
+
+function exportReport(){
+  const sales=getFilteredSales();
+  let csv=`惟凡精品珠寶 報表\n報表期間：${rptFilter.start||'全部'} 至 ${rptFilter.end||'全部'}\n\n`;
+  csv+=`銷售記錄\n日期,單號,商品,客戶,數量,金額\n`;
+  csv+=sales.map(s=>`${s.date},${s.orderNo},${s.productName},${s.customerName||'無'},${s.qty},${s.total}`).join('\n');
+  downloadCSV('惟凡精品珠寶_報表.csv',csv);
+}
+
+// ============================================================
+// USERS
+// ============================================================
+function renderUsers(){
+  const tbody=document.getElementById('usersTbody');
+  if(!tbody)return;
+  const r=currentUser.role;
+  let users=DB.users;
+  // Manager can only see/add staff
+  tbody.innerHTML=users.map(u=>`<tr>
+    <td>${u.login}</td><td>${u.name}</td>
+    <td><span class="badge ${u.role==='boss'?'badge-boss':u.role==='manager'?'badge-manager':'badge-staff'}">${roleLabel(u.role)}</span></td>
+    <td>${u.created}</td>
+    <td>
+      ${u.id!==currentUser.id?`<div class="btn-group">
+        <button class="btn btn-warning btn-sm" onclick="editUser('${u.id}')">編輯</button>
+        ${r==='boss'?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">刪除</button>`:''}
+      </div>`:'<span style="font-size:12px;color:var(--text-light);">（目前帳號）</span>'}
+    </td>
+  </tr>`).join('');
+}
+
+function openUserModal(){
+  editingUserId=null;
+  document.getElementById('userModalTitle').textContent='新增帳號';
+  document.getElementById('uLogin').value='';
+  document.getElementById('uPass').value='';
+  document.getElementById('uName').value='';
+  document.getElementById('uRole').value='staff';
+  // Restrict role options for manager
+  const roleEl=document.getElementById('uRole');
+  if(currentUser.role==='manager'){
+    roleEl.innerHTML='<option value="staff">一般員工</option>';
+  } else {
+    roleEl.innerHTML='<option value="boss">老闆</option><option value="manager">主管</option><option value="staff">一般員工</option>';
+  }
+  openModal('userModal');
+}
+
+function editUser(id){
+  const u=DB.users.find(x=>x.id===id);if(!u)return;
+  editingUserId=id;
+  document.getElementById('userModalTitle').textContent='編輯帳號';
+  document.getElementById('uLogin').value=u.login;
+  document.getElementById('uPass').value=u.pass;
+  document.getElementById('uName').value=u.name;
+  const roleEl=document.getElementById('uRole');
+  if(currentUser.role==='manager'){
+    roleEl.innerHTML='<option value="staff">一般員工</option>';
+  } else {
+    roleEl.innerHTML='<option value="boss">老闆</option><option value="manager">主管</option><option value="staff">一般員工</option>';
+  }
+  roleEl.value=u.role;
+  openModal('userModal');
+}
+
+async function saveUser(){
+  const login=document.getElementById('uLogin').value.trim();
+  const pass=document.getElementById('uPass').value.trim();
+  const name=document.getElementById('uName').value.trim();
+  const role=document.getElementById('uRole').value;
+  if(!login||!pass||!name){alert('請填入帳號、密碼及姓名！');return;}
+  if(!editingUserId&&DB.users.find(u=>u.login===login)){alert('此帳號已存在！');return;}
+  if(currentUser.role==='manager'&&(role==='boss'||role==='manager')){alert('主管只能建立一般員工帳號！');return;}
+  const user={
+    id:editingUserId||('u'+Date.now()),
+    login,pass,name,role,
+    created:editingUserId?DB.users.find(u=>u.id===editingUserId).created:new Date().toISOString().split('T')[0]
+  };
+  if(editingUserId){const idx=DB.users.findIndex(u=>u.id===editingUserId);if(idx>-1)DB.users[idx]=user;}
+  else DB.users.push(user);
+  await dbSaveConfig();
+  closeModal('userModal');renderUsers();
+}
+
+async function deleteUser(id){
+  if(id===currentUser.id){alert('無法刪除目前登入的帳號！');return;}
+  if(!confirm('確定刪除此帳號？'))return;
+  DB.users=DB.users.filter(u=>u.id!==id);
+  await dbSaveConfig();
+  renderUsers();
+}
+
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+function openModal(id){document.getElementById(id).classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active');}));
+
+// ============================================================
+// CSV DOWNLOAD
+// ============================================================
+function downloadCSV(filename,content){
+  const BOM='\uFEFF';
+  const blob=new Blob([BOM+content],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none') doLogin();
+  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
+});
+
+// ============================================================
+// BOOT
+// ============================================================
+(async () => {
+  await loadDB();
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+})();
+</script>
+</body>
+</html>
