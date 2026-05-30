@@ -1351,44 +1351,8 @@ function initApp() {
   document.getElementById('dashDate').textContent = new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
   populateFilters();
   renderDashboard();
-  seedDemoData();
 }
 
-function seedDemoData() {
-  if(DB.products.length > 0) return;
-  const now = new Date();
-  // Sample products
-  const sampleProds = [
-    {id:'p1',code:'RG-001',name:'玫瑰金鑽石戒指',category:'戒指',material:'18K',cost:8000,price:28000,stock:3,size:'12號',weight:'4.2g',gem:'天然鑽石0.3ct',desc:'璀璨奢華款式',status:'active',photos:[null,null,null],created:'2024-06-01'},
-    {id:'p2',code:'GD-002',name:'黃金項鍊',category:'項鍊',material:'黃金',cost:15000,price:42000,stock:2,size:'45cm',weight:'8.5g',gem:'',desc:'純金設計',status:'active',photos:[null,null,null],created:'2024-07-01'},
-    {id:'p3',code:'SV-003',name:'純銀耳環',category:'耳環',material:'純銀',cost:800,price:2800,stock:5,size:'',weight:'2.1g',gem:'',desc:'優雅設計',status:'active',photos:[null,null,null],created:'2024-08-01'},
-    {id:'p4',code:'PL-004',name:'白金手環',category:'手環',material:'白金',cost:25000,price:68000,stock:1,size:'16cm',weight:'12g',gem:'',desc:'頂級白金',status:'active',photos:[null,null,null],created:'2024-09-01'},
-    {id:'p5',code:'RG-005',name:'玫瑰金耳釘',category:'耳釘',material:'玫瑰金',cost:1200,price:3800,stock:0,size:'',weight:'1.5g',gem:'珍珠',desc:'珍珠耳釘',status:'inactive',photos:[null,null,null],created:'2024-10-01'}
-  ];
-  DB.products = sampleProds;
-
-  const sampleCusts = [
-    {id:'c1',name:'王小美',phone:'0912345678',email:'wang@mail.com',birthday:'1985-03-15',gender:'女',address:'台北市信義區',note:'偏好玫瑰金',totalSpend:55000,purchases:4,manualLevel:null,created:'2024-01-15'},
-    {id:'c2',name:'李大中',phone:'0923456789',email:'lee@mail.com',birthday:'1978-07-22',gender:'男',address:'台北市大安區',note:'',totalSpend:28000,purchases:2,manualLevel:null,created:'2024-03-10'},
-    {id:'c3',name:'陳雅琳',phone:'0934567890',email:'chen@mail.com',birthday:'1992-11-08',gender:'女',address:'新北市板橋區',note:'喜歡鑽石',totalSpend:8000,purchases:1,manualLevel:null,created:'2024-05-20'}
-  ];
-  DB.customers = sampleCusts;
-
-  const m = now.getMonth()+1;
-  const y = now.getFullYear();
-  const sampleSales = [
-    {id:'s1',orderNo:'SO-20240601-001',date:`${y}-${String(m).padStart(2,'0')}-02`,productId:'p1',productName:'玫瑰金鑽石戒指',customerId:'c1',customerName:'王小美',qty:1,unitPrice:28000,discount:0,total:28000,payment:'信用卡',note:'',staffId:currentUser.id,staffName:currentUser.name},
-    {id:'s2',orderNo:'SO-20240615-002',date:`${y}-${String(m).padStart(2,'0')}-08`,productId:'p3',productName:'純銀耳環',customerId:'c2',customerName:'李大中',qty:2,unitPrice:2800,discount:200,total:5400,payment:'現金',note:'',staffId:currentUser.id,staffName:currentUser.name},
-    {id:'s3',orderNo:'SO-20240701-003',date:`${y}-${String(m).padStart(2,'0')}-15`,productId:'p2',productName:'黃金項鍊',customerId:'c1',customerName:'王小美',qty:1,unitPrice:42000,discount:2000,total:40000,payment:'轉帳',note:'',staffId:currentUser.id,staffName:currentUser.name}
-  ];
-  DB.sales = sampleSales;
-
-  DB.repairs = [
-    {id:'r1',orderNo:'RP-001',date:`${y}-${String(m).padStart(2,'0')}-05`,customerId:'c1',customerName:'王小美',item:'18K玫瑰金戒指',type:'拋光清洗',fee:800,dueDate:`${y}-${String(m).padStart(2,'0')}-10`,problem:'表面刮痕',status:'done',created:`${y}-${String(m).padStart(2,'0')}-05`},
-    {id:'r2',orderNo:'RP-002',date:`${y}-${String(m).padStart(2,'0')}-12`,customerId:'c3',customerName:'陳雅琳',item:'純銀項鍊',type:'斷裂修復',fee:1200,dueDate:`${y}-${String(m).padStart(2,'0')}-18`,problem:'鍊條斷裂',status:'processing',created:`${y}-${String(m).padStart(2,'0')}-12`}
-  ];
-  saveDB();
-}
 
 function getBaseCategories() {
   return ['戒指','項鍊','耳環','耳釘','手環','手鐲','手珠串','腳鍊','吊墜','擺飾'];
