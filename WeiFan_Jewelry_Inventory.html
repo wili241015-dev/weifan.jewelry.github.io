@@ -810,8 +810,8 @@ select.filter-select {
         </div>
       </div>
       <div class="form-group" style="margin-top:12px;">
-        <label>客戶（手機搜尋）</label>
-        <input type="text" id="saleCustomerSearch" placeholder="輸入手機號碼搜尋客戶…" oninput="searchCustomerBySale(this.value)"/>
+        <label>客戶（手機或姓名搜尋）</label>
+        <input type="text" id="saleCustomerSearch" placeholder="輸入手機號碼或客戶姓名搜尋…" oninput="searchCustomerBySale(this.value)"/>
         <div id="custSearchResult" style="border:1px solid var(--border-color);border-radius:8px;margin-top:4px;display:none;background:#fff;max-height:150px;overflow-y:auto;"></div>
         <input type="hidden" id="saleCustomerId"/>
         <div id="selectedCustInfo" style="margin-top:6px;font-size:13px;color:var(--text-medium);"></div>
@@ -1901,9 +1901,13 @@ function calcSaleTotal() {
 
 function searchCustomerBySale(val) {
   const res=document.getElementById('custSearchResult');
-  if(!val||val.length<4){res.style.display='none';return;}
+  if(!val||val.length<1){res.style.display='none';return;}
   const found=DB.customers.filter(c=>c.phone.includes(val)||c.name.includes(val));
-  if(found.length===0){res.style.display='none';return;}
+  if(found.length===0){
+    res.style.display='block';
+    res.innerHTML=`<div style="padding:10px 14px;font-size:13px;color:var(--text-light);">找不到符合的客戶</div>`;
+    return;
+  }
   res.style.display='block';
   res.innerHTML=found.map(c=>`<div onclick="selectCustForSale('${c.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #eee;font-size:13px;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">
     <strong>${c.name}</strong> ${c.phone} — ${getLevelLabel(getLevel(c))}
