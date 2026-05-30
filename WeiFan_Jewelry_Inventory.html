@@ -122,13 +122,18 @@ body {
 #sidebar {
   width:240px; min-height:100vh;
   background: rgba(255,255,255,0.28);
-  backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
   display:flex; flex-direction:column; flex-shrink:0;
   position:fixed; left:0; top:0; bottom:0; z-index:100;
   overflow-y:auto;
   border-right: 1px solid rgba(255,255,255,0.45);
   box-shadow: 4px 0 28px rgba(180,100,120,0.12);
+}
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  #sidebar {
+    background: rgba(245, 225, 228, 0.97);
+  }
 }
 #mainContent { margin-left:240px; flex:1; min-height:100vh; }
 .sidebar-header {
