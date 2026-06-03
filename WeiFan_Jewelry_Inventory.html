@@ -34,54 +34,47 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
   font-family: 'Noto Serif TC', serif;
-  background-color: #D4899A;
+  background-color: #E8A8B4;
   background-image:
-    repeating-linear-gradient(
-      110deg,
-      transparent 0px,
-      rgba(255,235,240,0.22) 1px,
-      rgba(255,235,240,0.22) 2px,
-      transparent 3px,
-      transparent 16px
-    ),
-    repeating-linear-gradient(
-      -70deg,
-      transparent 0px,
-      rgba(180,80,100,0.12) 1px,
-      rgba(180,80,100,0.12) 2px,
-      transparent 3px,
-      transparent 20px
+    linear-gradient(
+      105deg,
+      rgba(255,255,255,0.18) 0%,
+      rgba(255,255,255,0.04) 20%,
+      rgba(255,255,255,0.22) 35%,
+      rgba(255,255,255,0.02) 50%,
+      rgba(255,255,255,0.18) 65%,
+      rgba(255,255,255,0.04) 80%,
+      rgba(255,255,255,0.15) 100%
     ),
     linear-gradient(
-      150deg,
-      #C8788A 0%,
-      #E8A8B8 7%,
-      #D4889A 13%,
-      #F0C0CC 20%,
-      #C87888 28%,
-      #E8A0B0 35%,
-      #D49AAA 42%,
-      #F2C8D2 50%,
-      #C880A0 57%,
-      #E0A8BC 64%,
-      #D090A8 71%,
-      #EAB8C8 78%,
-      #C87898 86%,
-      #DFA0B4 93%,
-      #C888A0 100%
+      175deg,
+      rgba(0,0,0,0.06) 0%,
+      rgba(255,255,255,0.1) 30%,
+      rgba(0,0,0,0.04) 60%,
+      rgba(255,255,255,0.08) 100%
+    ),
+    linear-gradient(
+      135deg,
+      #F0C0C8 0%,
+      #E8A0A8 18%,
+      #FFD8DE 35%,
+      #C87880 50%,
+      #F5C0C8 65%,
+      #D890A0 80%,
+      #E8A8B4 100%
     );
-  background-size: auto, auto, 100% 100%;
+  background-size: 100% 100%, 100% 100%, 100% 100%;
   min-height: 100vh;
   color: var(--text-dark);
 }
 /* LOGIN */
 #loginScreen {
   position:fixed; inset:0; z-index:1000;
-  background-color: #D4899A;
+  background-color: #E8A8B4;
   background-image:
-    repeating-linear-gradient(110deg, transparent 0px, rgba(255,235,240,0.22) 1px, rgba(255,235,240,0.22) 2px, transparent 3px, transparent 16px),
-    repeating-linear-gradient(-70deg, transparent 0px, rgba(180,80,100,0.12) 1px, rgba(180,80,100,0.12) 2px, transparent 3px, transparent 20px),
-    linear-gradient(150deg, #C8788A 0%, #E8A8B8 7%, #D4889A 13%, #F0C0CC 20%, #C87888 28%, #E8A0B0 35%, #D49AAA 42%, #F2C8D2 50%, #C880A0 57%, #E0A8BC 64%, #D090A8 71%, #EAB8C8 78%, #C87898 86%, #DFA0B4 93%, #C888A0 100%);
+    linear-gradient(105deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 20%, rgba(255,255,255,0.22) 35%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.18) 65%, rgba(255,255,255,0.04) 80%, rgba(255,255,255,0.15) 100%),
+    linear-gradient(175deg, rgba(0,0,0,0.06) 0%, rgba(255,255,255,0.1) 30%, rgba(0,0,0,0.04) 60%, rgba(255,255,255,0.08) 100%),
+    linear-gradient(135deg, #F0C0C8 0%, #E8A0A8 18%, #FFD8DE 35%, #C87880 50%, #F5C0C8 65%, #D890A0 80%, #E8A8B4 100%);
   display:flex; align-items:center; justify-content:center;
 }
 .login-box {
