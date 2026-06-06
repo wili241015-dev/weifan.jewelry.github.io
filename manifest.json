@@ -1,7 +1,8 @@
 {
   "name": "惟凡精品珠寶 Inventory System",
   "short_name": "WeiFan",
-  "start_url": "/WeiFan_Jewelry_Inventory",
+  "start_url": "/weifan.jewelry.github.io/WeiFan_Jewelry_Inventory",
+  "scope": "/weifan.jewelry.github.io/",
   "display": "standalone",
   "background_color": "#E8A8B4",
   "theme_color": "#E8A8B4",
