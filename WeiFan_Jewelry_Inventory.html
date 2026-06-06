@@ -76,8 +76,32 @@ body.theme-latte {
   background-size: 100% 100%, 100% 100%, 100% 100%;
 }
 
-
-
+/* 主題切換按鈕 */
+.theme-switcher {
+  position: fixed; bottom: 24px; left: 256px;
+  display: flex; gap: 8px; z-index: 200;
+  background: rgba(255,255,255,0.85);
+  padding: 8px 12px; border-radius: 30px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.theme-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2.5px solid rgba(255,255,255,0.8);
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  position: relative;
+}
+.theme-btn:hover { transform: scale(1.15); }
+.theme-btn.active { border-color: #333; box-shadow: 0 0 0 2px #333; }
+.theme-btn-rose { background: linear-gradient(135deg, #F0C0C8, #C87880); }
+.theme-btn-white { background: linear-gradient(135deg, #FFFFFF, #E0E0E0); border-color: #CCC; }
+.theme-btn-latte { background: linear-gradient(135deg, #E8D0B8, #B89070); }
+.theme-label { font-size: 10px; color: #666; line-height: 28px; white-space: nowrap; font-family: sans-serif; }
+@media(max-width:768px){
+  .theme-switcher { left: 210px; bottom: 16px; }
+}
 
 /* LOGIN */
 #loginScreen {
@@ -429,6 +453,13 @@ select.filter-select {
 
 <!-- APP -->
 <div id="app" style="display:none;">
+  <!-- 主題切換器 -->
+  <div class="theme-switcher" id="themeSwitcher">
+    <span class="theme-label">背景：</span>
+    <div class="theme-btn theme-btn-rose active" onclick="setTheme('rose')" title="玫瑰金"></div>
+    <div class="theme-btn theme-btn-white" onclick="setTheme('white')" title="白底黑字"></div>
+    <div class="theme-btn theme-btn-latte" onclick="setTheme('latte')" title="奶茶裸膚金屬"></div>
+  </div>
   <!-- SIDEBAR -->
   <div id="sidebar">
     <div class="sidebar-header">
@@ -459,18 +490,10 @@ select.filter-select {
         <span class="nav-icon">⚙️</span><span>帳號管理</span>
       </div>
     </div>
-    <!-- 背景主題切換 -->
-    <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,0.3);">
-      <div style="font-size:10px;color:rgba(100,40,55,0.6);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:8px;">背景主題</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <div onclick="setTheme('rose')" id="themeBtn-rose" title="玫瑰金" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#F0C0C8,#C87880);cursor:pointer;border:2.5px solid rgba(255,255,255,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.2);transition:all 0.2s;"></div>
-        <div onclick="setTheme('white')" id="themeBtn-white" title="白底黑字" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#FFFFFF,#E0E0E0);cursor:pointer;border:2.5px solid rgba(200,200,200,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.2);transition:all 0.2s;"></div>
-        <div onclick="setTheme('latte')" id="themeBtn-latte" title="奶茶裸膚" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#E8D0B8,#B89070);cursor:pointer;border:2.5px solid rgba(255,255,255,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.2);transition:all 0.2s;"></div>
-      </div>
-    </div>
     <div class="user-info">
       <div class="user-badge" id="sidebarRole">老闆</div>
       <div class="user-name" id="sidebarName">Admin</div>
+      <button class="btn-logout" style="margin-top:8px;background:rgba(255,255,255,0.4);color:rgba(100,40,55,0.8);" onclick="openChangePwdModal()">🔑 修改密碼</button>
       <button class="btn-logout" onclick="doLogout()">登 出</button>
     </div>
   </div>
@@ -1105,6 +1128,35 @@ select.filter-select {
           </table>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="changePwdModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">🔑 修改密碼</div>
+      <button class="modal-close" onclick="closeModal('changePwdModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="changePwdAlert"></div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>目前密碼 *</label>
+        <input type="password" id="pwdOld" placeholder="輸入目前密碼"/>
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>新密碼 *</label>
+        <input type="password" id="pwdNew" placeholder="輸入新密碼（至少4個字元）"/>
+      </div>
+      <div class="form-group">
+        <label>確認新密碼 *</label>
+        <input type="password" id="pwdConfirm" placeholder="再次輸入新密碼"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('changePwdModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveChangePwd()">確認修改</button>
     </div>
   </div>
 </div>
@@ -2581,19 +2633,10 @@ function renderUsers(){
   const tbody=document.getElementById('usersTbody');
   if(!tbody)return;
   const r=currentUser.role;
-  const isBoss = r==='boss';
-  // Update table header based on role
-  const thead = tbody.closest('table').querySelector('thead tr');
-  if(thead) {
-    thead.innerHTML = isBoss
-      ? '<th>帳號</th><th>密碼</th><th>姓名</th><th>角色</th><th>建立日期</th><th>操作</th>'
-      : '<th>帳號</th><th>姓名</th><th>角色</th><th>建立日期</th><th>操作</th>';
-  }
   let users=DB.users;
+  // Manager can only see/add staff
   tbody.innerHTML=users.map(u=>`<tr>
-    <td><strong>${u.login}</strong></td>
-    ${isBoss ? `<td><span style="font-family:monospace;background:#f0f0f0;padding:3px 8px;border-radius:6px;font-size:13px;">${u.pass}</span></td>` : ''}
-    <td>${u.name}</td>
+    <td>${u.login}</td><td>${u.name}</td>
     <td><span class="badge ${u.role==='boss'?'badge-boss':u.role==='manager'?'badge-manager':'badge-staff'}">${roleLabel(u.role)}</span></td>
     <td>${u.created}</td>
     <td>
@@ -2610,6 +2653,7 @@ function openUserModal(){
   document.getElementById('userModalTitle').textContent='新增帳號';
   document.getElementById('uLogin').value='';
   document.getElementById('uPass').value='';
+  document.getElementById('uPass').type='password';
   document.getElementById('uName').value='';
   document.getElementById('uRole').value='staff';
   // Restrict role options for manager
@@ -2628,6 +2672,14 @@ function editUser(id){
   document.getElementById('userModalTitle').textContent='編輯帳號';
   document.getElementById('uLogin').value=u.login;
   document.getElementById('uPass').value=u.pass;
+  // 老闆可以看到明文密碼
+  const passField=document.getElementById('uPass');
+  if(currentUser.role==='boss'){
+    passField.type='text';
+    passField.style.letterSpacing='normal';
+  } else {
+    passField.type='password';
+  }
   document.getElementById('uName').value=u.name;
   const roleEl=document.getElementById('uRole');
   if(currentUser.role==='manager'){
@@ -2684,18 +2736,62 @@ function downloadCSV(filename,content){
 }
 
 // ============================================================
-// 主題切換
+// 修改密碼
+// ============================================================
+function openChangePwdModal() {
+  document.getElementById('pwdOld').value='';
+  document.getElementById('pwdNew').value='';
+  document.getElementById('pwdConfirm').value='';
+  document.getElementById('changePwdAlert').innerHTML='';
+  openModal('changePwdModal');
+}
+
+async function saveChangePwd() {
+  const oldPwd = document.getElementById('pwdOld').value.trim();
+  const newPwd = document.getElementById('pwdNew').value.trim();
+  const confirm = document.getElementById('pwdConfirm').value.trim();
+  const alertEl = document.getElementById('changePwdAlert');
+
+  // 驗證
+  if(!oldPwd||!newPwd||!confirm) {
+    alertEl.innerHTML='<div class="alert-box alert-error">請填入所有欄位！</div>'; return;
+  }
+  if(oldPwd !== currentUser.pass) {
+    alertEl.innerHTML='<div class="alert-box alert-error">目前密碼不正確！</div>'; return;
+  }
+  if(newPwd.length < 4) {
+    alertEl.innerHTML='<div class="alert-box alert-error">新密碼至少需要4個字元！</div>'; return;
+  }
+  if(newPwd !== confirm) {
+    alertEl.innerHTML='<div class="alert-box alert-error">兩次輸入的新密碼不一致！</div>'; return;
+  }
+  if(newPwd === oldPwd) {
+    alertEl.innerHTML='<div class="alert-box alert-error">新密碼不能與目前密碼相同！</div>'; return;
+  }
+
+  // 更新密碼
+  const idx = DB.users.findIndex(u=>u.id===currentUser.id);
+  if(idx>-1) {
+    DB.users[idx].pass = newPwd;
+    currentUser.pass = newPwd;
+    // 更新記住的登入 session
+    try { localStorage.setItem('weifan_session', JSON.stringify({login:currentUser.login, pass:newPwd})); } catch(e){}
+    await dbSaveConfig();
+  }
+  alertEl.innerHTML='<div class="alert-box alert-success">✅ 密碼修改成功！</div>';
+  setTimeout(()=>closeModal('changePwdModal'), 1500);
+}
+
+
 // ============================================================
 function setTheme(theme) {
   document.body.classList.remove('theme-white','theme-latte');
   if(theme==='white') document.body.classList.add('theme-white');
   if(theme==='latte') document.body.classList.add('theme-latte');
   // 更新按鈕狀態
-  ['rose','white','latte'].forEach(t => {
-    const btn = document.getElementById('themeBtn-'+t);
-    if(btn) btn.style.border = t===theme ? '2.5px solid #333' : '2.5px solid rgba(255,255,255,0.8)';
-  });
-  document.getElementById('themeBtn-white')?.style.setProperty('border-color', theme==='white'?'#333':'rgba(200,200,200,0.8)');
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  const map = {rose:0, white:1, latte:2};
+  document.querySelectorAll('.theme-btn')[map[theme]]?.classList.add('active');
   try { localStorage.setItem('weifan_theme', theme); } catch(e){}
 }
 function restoreTheme() {
