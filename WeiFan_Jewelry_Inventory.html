@@ -1084,7 +1084,7 @@ select.filter-select {
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('userModal')">取消</button>
-      <button class="btn btn-primary" onclick="saveUser()">建立帳號</button>
+      <button class="btn btn-primary" onclick="saveUser()">儲存</button>
     </div>
   </div>
 </div>
@@ -2608,9 +2608,8 @@ function renderUsers(){
   // 依角色決定可見帳號
   let users=[];
   if(r==='boss') {
-    users = DB.users;
+    users = DB.users; // 老闆看全部（含自己）
   } else if(r==='manager') {
-    // 主管看：自己 + 員工（不看老闆、不看其他主管）
     users = DB.users.filter(u=>u.id===currentUser.id || u.role==='staff');
   } else {
     users = DB.users.filter(u=>u.id===currentUser.id);
@@ -2626,7 +2625,7 @@ function renderUsers(){
     <td>${u.created}</td>
     <td>
       <div class="btn-group">
-        <button class="btn btn-warning btn-sm" onclick="editUser('${u.id}')">編輯${u.id===currentUser.id?' / 改密碼':''}</button>
+        <button class="btn btn-warning btn-sm" onclick="editUser('${u.id}')">編輯 / 改密碼</button>
         ${r==='boss'&&u.id!==currentUser.id?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">刪除</button>`:''}
       </div>
     </td>
@@ -2663,14 +2662,14 @@ function editUser(id){
 
   editingUserId=id;
 
-  document.getElementById('userModalTitle').textContent = isSelf ? '編輯我的帳號 / 修改密碼' : '編輯帳號';
+  document.getElementById('userModalTitle').textContent='編輯帳號 / 修改密碼';
   document.getElementById('uLogin').value=u.login;
   document.getElementById('uName').value=u.name;
 
-  // 密碼：自己或老闆才顯示明文，主管編輯員工時顯示星號
+  // 老闆：所有人密碼都明文；自己：明文；主管看員工：明文；其他：星號
   const passField=document.getElementById('uPass');
   passField.value=u.pass;
-  passField.type = (isSelf || isBoss) ? 'text' : 'password';
+  passField.type='text'; // 全部明文
 
   const roleEl=document.getElementById('uRole');
   const roleWrap=document.getElementById('uRoleWrap');
