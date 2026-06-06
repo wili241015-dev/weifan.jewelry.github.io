@@ -76,32 +76,8 @@ body.theme-latte {
   background-size: 100% 100%, 100% 100%, 100% 100%;
 }
 
-/* 主題切換按鈕 */
-.theme-switcher {
-  position: fixed; bottom: 24px; left: 256px;
-  display: flex; gap: 8px; z-index: 200;
-  background: rgba(255,255,255,0.85);
-  padding: 8px 12px; border-radius: 30px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.theme-btn {
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 2.5px solid rgba(255,255,255,0.8);
-  cursor: pointer; transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  position: relative;
-}
-.theme-btn:hover { transform: scale(1.15); }
-.theme-btn.active { border-color: #333; box-shadow: 0 0 0 2px #333; }
-.theme-btn-rose { background: linear-gradient(135deg, #F0C0C8, #C87880); }
-.theme-btn-white { background: linear-gradient(135deg, #FFFFFF, #E0E0E0); border-color: #CCC; }
-.theme-btn-latte { background: linear-gradient(135deg, #E8D0B8, #B89070); }
-.theme-label { font-size: 10px; color: #666; line-height: 28px; white-space: nowrap; font-family: sans-serif; }
-@media(max-width:768px){
-  .theme-switcher { left: 210px; bottom: 16px; }
-}
+
+
 
 /* LOGIN */
 #loginScreen {
@@ -453,13 +429,6 @@ select.filter-select {
 
 <!-- APP -->
 <div id="app" style="display:none;">
-  <!-- 主題切換器 -->
-  <div class="theme-switcher" id="themeSwitcher">
-    <span class="theme-label">背景：</span>
-    <div class="theme-btn theme-btn-rose active" onclick="setTheme('rose')" title="玫瑰金"></div>
-    <div class="theme-btn theme-btn-white" onclick="setTheme('white')" title="白底黑字"></div>
-    <div class="theme-btn theme-btn-latte" onclick="setTheme('latte')" title="奶茶裸膚金屬"></div>
-  </div>
   <!-- SIDEBAR -->
   <div id="sidebar">
     <div class="sidebar-header">
@@ -488,6 +457,15 @@ select.filter-select {
       </div>
       <div class="nav-item" id="nav-admin" onclick="showPage('admin')" style="display:none;">
         <span class="nav-icon">⚙️</span><span>帳號管理</span>
+      </div>
+    </div>
+    <!-- 背景主題切換 -->
+    <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,0.3);">
+      <div style="font-size:10px;color:rgba(100,40,55,0.6);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:8px;">背景主題</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div onclick="setTheme('rose')" id="themeBtn-rose" title="玫瑰金" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#F0C0C8,#C87880);cursor:pointer;border:2.5px solid rgba(255,255,255,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.2);transition:all 0.2s;"></div>
+        <div onclick="setTheme('white')" id="themeBtn-white" title="白底黑字" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#FFFFFF,#E0E0E0);cursor:pointer;border:2.5px solid rgba(200,200,200,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.2);transition:all 0.2s;"></div>
+        <div onclick="setTheme('latte')" id="themeBtn-latte" title="奶茶裸膚" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#E8D0B8,#B89070);cursor:pointer;border:2.5px solid rgba(255,255,255,0.8);box-shadow:0 2px 6px rgba(0,0,0,0.2);transition:all 0.2s;"></div>
       </div>
     </div>
     <div class="user-info">
@@ -2603,10 +2581,19 @@ function renderUsers(){
   const tbody=document.getElementById('usersTbody');
   if(!tbody)return;
   const r=currentUser.role;
+  const isBoss = r==='boss';
+  // Update table header based on role
+  const thead = tbody.closest('table').querySelector('thead tr');
+  if(thead) {
+    thead.innerHTML = isBoss
+      ? '<th>帳號</th><th>密碼</th><th>姓名</th><th>角色</th><th>建立日期</th><th>操作</th>'
+      : '<th>帳號</th><th>姓名</th><th>角色</th><th>建立日期</th><th>操作</th>';
+  }
   let users=DB.users;
-  // Manager can only see/add staff
   tbody.innerHTML=users.map(u=>`<tr>
-    <td>${u.login}</td><td>${u.name}</td>
+    <td><strong>${u.login}</strong></td>
+    ${isBoss ? `<td><span style="font-family:monospace;background:#f0f0f0;padding:3px 8px;border-radius:6px;font-size:13px;">${u.pass}</span></td>` : ''}
+    <td>${u.name}</td>
     <td><span class="badge ${u.role==='boss'?'badge-boss':u.role==='manager'?'badge-manager':'badge-staff'}">${roleLabel(u.role)}</span></td>
     <td>${u.created}</td>
     <td>
@@ -2704,9 +2691,11 @@ function setTheme(theme) {
   if(theme==='white') document.body.classList.add('theme-white');
   if(theme==='latte') document.body.classList.add('theme-latte');
   // 更新按鈕狀態
-  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
-  const map = {rose:0, white:1, latte:2};
-  document.querySelectorAll('.theme-btn')[map[theme]]?.classList.add('active');
+  ['rose','white','latte'].forEach(t => {
+    const btn = document.getElementById('themeBtn-'+t);
+    if(btn) btn.style.border = t===theme ? '2.5px solid #333' : '2.5px solid rgba(255,255,255,0.8)';
+  });
+  document.getElementById('themeBtn-white')?.style.setProperty('border-color', theme==='white'?'#333':'rgba(200,200,200,0.8)');
   try { localStorage.setItem('weifan_theme', theme); } catch(e){}
 }
 function restoreTheme() {
