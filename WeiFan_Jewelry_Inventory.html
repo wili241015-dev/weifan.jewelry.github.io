@@ -2608,12 +2608,14 @@ function renderUsers(){
   // 依角色決定可見帳號
   let users=[];
   if(r==='boss') {
-    users = DB.users; // 老闆看全部（含自己）
+    users = DB.users;
   } else if(r==='manager') {
-    // 主管只看：自己 + 員工（絕對不顯示老闆和其他主管）
-    users = DB.users.filter(u => u.id===currentUser.id || u.role==='staff');
+    users = DB.users.filter(u => {
+      if(u.role==='boss') return false;      // 絕對不顯示老闆
+      if(u.role==='manager' && u.id!==currentUser.id) return false; // 不顯示其他主管
+      return true; // 自己 + 員工
+    });
   } else {
-    // 員工只看自己
     users = DB.users.filter(u => u.id===currentUser.id);
   }
 
@@ -2628,7 +2630,7 @@ function renderUsers(){
     <td>
       <div class="btn-group">
         <button class="btn btn-warning btn-sm" onclick="editUser('${u.id}')">編輯 / 改密碼</button>
-        ${r==='boss'&&u.id!==currentUser.id?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">刪除</button>`:''}
+        ${u.id!==currentUser.id&&r==='boss'?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">刪除</button>`:''}
       </div>
     </td>
   </tr>`).join('');
