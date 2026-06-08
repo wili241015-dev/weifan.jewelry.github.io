@@ -2609,22 +2609,34 @@ function renderUsers(){
   // 依角色決定可見帳號
   let users=[];
   if(r==='boss') {
-    users = DB.users;
+    users = [...DB.users];
   } else if(r==='manager') {
     users = DB.users.filter(u => {
-      if(u.role==='boss') return false;      // 絕對不顯示老闆
-      if(u.role==='manager' && u.id!==currentUser.id) return false; // 不顯示其他主管
-      return true; // 自己 + 員工
+      if(u.role==='boss') return false;
+      if(u.role==='manager' && u.id!==currentUser.id) return false;
+      return true;
     });
   } else {
     users = DB.users.filter(u => u.id===currentUser.id);
   }
 
+  // 排序：目前登入帳號第一，其餘依階級 老闆>主管>員工
+  const roleOrder = {boss:0, manager:1, staff:2};
+  users.sort((a,b)=>{
+    if(a.id===currentUser.id) return -1;
+    if(b.id===currentUser.id) return 1;
+    return (roleOrder[a.role]||2) - (roleOrder[b.role]||2);
+  });
+
+  // 新增帳號按鈕：員工不顯示
+  const btnAdd = document.getElementById('btnAddUser');
+  if(btnAdd) btnAdd.style.display = r==='staff' ? 'none' : 'inline-flex';
+
   const thead=tbody.closest('table').querySelector('thead tr');
   if(thead) thead.innerHTML='<th>帳號</th><th>姓名</th><th>角色</th><th>建立日期</th><th>操作</th>';
 
-  tbody.innerHTML=users.map(u=>`<tr>
-    <td><strong>${u.login}</strong></td>
+  tbody.innerHTML=users.map(u=>`<tr ${u.id===currentUser.id?'style="background:rgba(201,149,108,0.06);"':''}>
+    <td><strong>${u.login}</strong>${u.id===currentUser.id?' <span style="font-size:10px;color:var(--text-light);">（目前登入）</span>':''}</td>
     <td>${u.name}</td>
     <td><span class="badge ${u.role==='boss'?'badge-boss':u.role==='manager'?'badge-manager':'badge-staff'}">${roleLabel(u.role)}</span></td>
     <td>${u.created}</td>
