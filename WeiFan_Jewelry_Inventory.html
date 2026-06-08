@@ -1357,7 +1357,8 @@ function showAppForUser(user) {
   document.getElementById('sidebarRole').textContent = roleLabel(user.role);
   document.getElementById('sidebarName').textContent = user.name;
   setupNavByRole();
-  initApp();
+  // 每次登入都重新從雲端載入最新資料，確保權限視角正確
+  loadDB().then(()=>{ initApp(); });
 }
 
 function doLogout() {
