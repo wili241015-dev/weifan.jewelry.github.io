@@ -1357,8 +1357,12 @@ function showAppForUser(user) {
   document.getElementById('sidebarRole').textContent = roleLabel(user.role);
   document.getElementById('sidebarName').textContent = user.name;
   setupNavByRole();
-  // 每次登入都重新從雲端載入最新資料，確保權限視角正確
-  loadDB().then(()=>{ initApp(); });
+  // 先顯示載入中，載入完再初始化確保資料是最新的
+  document.getElementById('mainContent').style.opacity='0.4';
+  loadDB().then(()=>{
+    initApp();
+    document.getElementById('mainContent').style.opacity='1';
+  });
 }
 
 function doLogout() {
@@ -2620,12 +2624,18 @@ function renderUsers(){
     users = DB.users.filter(u => u.id===currentUser.id);
   }
 
-  // 排序：目前登入帳號第一，其餘依階級 老闆>主管>員工
-  const roleOrder = {boss:0, manager:1, staff:2};
+  // 排序：目前登入帳號第一，其餘依階級 老闆>主管>員工，同級依姓名排
+  const roleOrder = {'boss':0, 'manager':1, 'staff':2};
   users.sort((a,b)=>{
+    // 目前登入的排第一
     if(a.id===currentUser.id) return -1;
     if(b.id===currentUser.id) return 1;
-    return (roleOrder[a.role]||2) - (roleOrder[b.role]||2);
+    // 依角色排序
+    const ra = roleOrder[a.role] !== undefined ? roleOrder[a.role] : 2;
+    const rb = roleOrder[b.role] !== undefined ? roleOrder[b.role] : 2;
+    if(ra !== rb) return ra - rb;
+    // 同角色依姓名排
+    return (a.name||'').localeCompare(b.name||'');
   });
 
   // 新增帳號按鈕：員工不顯示
