@@ -1370,6 +1370,9 @@ function showAppForUser(user) {
 
 function doLogout() {
   currentUser = null;
+  // 清空DB讓下次登入強制重新載入
+  DB.products=[]; DB.sales=[]; DB.repairs=[]; DB.customers=[];
+  DB.customMaterials=[]; DB.customCategories=[]; DB.photosData={};
   // 清除登入狀態
   try { localStorage.removeItem('weifan_session'); } catch(e){}
   document.getElementById('app').style.display='none';
@@ -2618,11 +2621,8 @@ function renderUsers(){
   if(r==='boss') {
     users = [...DB.users];
   } else if(r==='manager') {
-    users = DB.users.filter(u => {
-      if(u.role==='boss') return false;
-      if(u.role==='manager' && u.id!==currentUser.id) return false;
-      return true;
-    });
+    // 主管看：自己 + 所有員工 + 其他主管（不看老闆）
+    users = DB.users.filter(u => u.role!=='boss');
   } else {
     users = DB.users.filter(u => u.id===currentUser.id);
   }
@@ -2645,18 +2645,26 @@ function renderUsers(){
   const thead=tbody.closest('table').querySelector('thead tr');
   if(thead) thead.innerHTML='<th>帳號</th><th>姓名</th><th>角色</th><th>建立日期</th><th>操作</th>';
 
-  tbody.innerHTML=users.map(u=>`<tr ${u.id===currentUser.id?'style="background:rgba(201,149,108,0.06);"':''}>
-    <td><strong>${u.login}</strong>${u.id===currentUser.id?' <span style="font-size:10px;color:var(--text-light);">（目前登入）</span>':''}</td>
-    <td>${u.name}</td>
-    <td><span class="badge ${u.role==='boss'?'badge-boss':u.role==='manager'?'badge-manager':'badge-staff'}">${roleLabel(u.role)}</span></td>
-    <td>${u.created}</td>
-    <td>
-      <div class="btn-group">
-        <button class="btn btn-warning btn-sm" onclick="editUser('${u.id}')">編輯 / 改密碼</button>
-        ${u.id!==currentUser.id&&r==='boss'?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">刪除</button>`:''}
-      </div>
-    </td>
-  </tr>`).join('');
+  tbody.innerHTML=users.map(u=>{
+    // 主管看其他主管：密碼星號、不可編輯
+    const isOtherManager = r==='manager' && u.role==='manager' && u.id!==currentUser.id;
+    const canEdit = !isOtherManager;
+    return `<tr ${u.id===currentUser.id?'style="background:rgba(201,149,108,0.06);"':''}>
+      <td><strong>${u.login}</strong>${u.id===currentUser.id?' <span style="font-size:10px;color:var(--text-light);">（目前登入）</span>':''}</td>
+      <td>${u.name}</td>
+      <td><span class="badge ${u.role==='boss'?'badge-boss':u.role==='manager'?'badge-manager':'badge-staff'}">${roleLabel(u.role)}</span></td>
+      <td>${u.created}</td>
+      <td>
+        <div class="btn-group">
+          ${canEdit
+            ? `<button class="btn btn-warning btn-sm" onclick="editUser('${u.id}')">編輯 / 改密碼</button>`
+            : `<span style="font-size:12px;color:var(--text-light);padding:6px 8px;">密碼：＊＊＊＊＊</span>`
+          }
+          ${u.id!==currentUser.id&&r==='boss'?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">刪除</button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 function openUserModal(){
@@ -2684,22 +2692,38 @@ function editUser(id){
   const u=DB.users.find(x=>x.id===id);if(!u)return;
   const isSelf = id===currentUser.id;
   const isBoss = currentUser.role==='boss';
+  const isManagerEditingOtherManager = currentUser.role==='manager' && u.role==='manager' && !isSelf;
 
   // 權限檢查
   if(currentUser.role==='staff' && !isSelf){ alert('無權限編輯此帳號！');return; }
   if(currentUser.role==='manager' && u.role==='boss'){ alert('無權限編輯老闆帳號！');return; }
-  if(currentUser.role==='manager' && u.role==='manager' && !isSelf){ alert('主管無法編輯其他主管的帳號！');return; }
+  if(isManagerEditingOtherManager){ alert('主管無法編輯其他主管的帳號！');return; }
 
   editingUserId=id;
-
   document.getElementById('userModalTitle').textContent='編輯帳號 / 修改密碼';
   document.getElementById('uLogin').value=u.login;
   document.getElementById('uName').value=u.name;
 
-  // 所有情況都顯示明文密碼
+  // 密碼：老闆全明文；自己明文；主管看員工明文；其他星號
   const passField=document.getElementById('uPass');
   passField.value=u.pass;
-  passField.type='text';
+  passField.type = (isBoss || isSelf || (currentUser.role==='manager' && u.role==='staff')) ? 'text' : 'password';
+
+  const roleEl=document.getElementById('uRole');
+  const roleWrap=document.getElementById('uRoleWrap');
+  if(isSelf){
+    roleWrap.style.display='none';
+  } else {
+    roleWrap.style.display='flex';
+    if(currentUser.role==='manager'){
+      roleEl.innerHTML='<option value="manager">主管</option><option value="staff">一般員工</option>';
+    } else {
+      roleEl.innerHTML='<option value="boss">老闆</option><option value="manager">主管</option><option value="staff">一般員工</option>';
+    }
+    roleEl.value=u.role;
+  }
+  openModal('userModal');
+}
 
   const roleEl=document.getElementById('uRole');
   const roleWrap=document.getElementById('uRoleWrap');
