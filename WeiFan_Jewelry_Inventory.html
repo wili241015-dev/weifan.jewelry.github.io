@@ -2723,22 +2723,6 @@ function editUser(id){
   openModal('userModal');
 }
 
-  const roleEl=document.getElementById('uRole');
-  const roleWrap=document.getElementById('uRoleWrap');
-  if(isSelf){
-    roleWrap.style.display='none';
-  } else {
-    roleWrap.style.display='flex';
-    if(currentUser.role==='manager'){
-      roleEl.innerHTML='<option value="manager">主管</option><option value="staff">一般員工</option>';
-    } else {
-      roleEl.innerHTML='<option value="boss">老闆</option><option value="manager">主管</option><option value="staff">一般員工</option>';
-    }
-    roleEl.value=u.role;
-  }
-  openModal('userModal');
-}
-
 async function saveUser(){
   const login=document.getElementById('uLogin').value.trim();
   const pass=document.getElementById('uPass').value.trim();
