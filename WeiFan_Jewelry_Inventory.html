@@ -1337,16 +1337,21 @@ async function dbSaveConfig() {
 // ============================================================
 // AUTH
 // ============================================================
-function doLogin() {
+async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
+  if(!u||!p){ document.getElementById('loginErr').style.display='block'; return; }
+
+  // 若DB.users是空的（剛登出），先重新載入
+  if(DB.users.length===0) await loadDB();
+
   const user = DB.users.find(x => x.login===u && x.pass===p);
   if(!user) {
     document.getElementById('loginErr').style.display='block';
     return;
   }
+  document.getElementById('loginErr').style.display='none';
   currentUser = user;
-  // 記住登入狀態
   try { localStorage.setItem('weifan_session', JSON.stringify({login: user.login, pass: user.pass})); } catch(e){}
   showAppForUser(user);
 }
