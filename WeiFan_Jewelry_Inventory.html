@@ -1541,6 +1541,12 @@ function renderInventory() {
     return true;
   });
 
+  // 排序：上架商品在前，下架商品排最後
+  prods.sort((a,b)=>{
+    if(a.status===b.status) return 0;
+    return a.status==='active' ? -1 : 1;
+  });
+
   const tbody = document.getElementById('inventoryTbody');
   if(!tbody) return;
   if(prods.length===0){
